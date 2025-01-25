@@ -1,0 +1,9 @@
+<div>
+  <h1>Welcome to ThreeDFour</h1>
+  <% if user_signed_in? %>
+    <p>Welcome back, <%= current_user.username %>!</p>
+    <%= link_to "Sign out", destroy_user_session_path, data: { turbo_method: :delete } %>
+  <% else %>
+    <p>Please <%= link_to "sign in", new_user_session_path %> or <%= link_to "sign up", new_user_registration_path %></p>
+  <% end %>
+</div> 
