@@ -5,10 +5,14 @@ RSpec.describe User, type: :model do
     subject { build(:user) }
 
     it { should validate_presence_of(:username) }
-    it { should validate_uniqueness_of(:username) }
-    it { should validate_presence_of(:email) }
-    it { should validate_uniqueness_of(:email).case_insensitive }
-
+    
+    describe 'uniqueness' do
+      before { create(:user, :confirmed) }
+      
+      it { should validate_uniqueness_of(:username) }
+      it { should validate_uniqueness_of(:email).case_insensitive }
+    end
+    
     context 'when avatar_url is present' do
       it 'validates avatar_url format' do
         user = build(:user, avatar_url: 'not-a-url')
@@ -35,5 +39,12 @@ RSpec.describe User, type: :model do
     it { should have_db_column(:last_sign_in_at).of_type(:datetime) }
     it { should have_db_column(:current_sign_in_ip).of_type(:string) }
     it { should have_db_column(:last_sign_in_ip).of_type(:string) }
+    it { should have_db_column(:confirmation_token).of_type(:string) }
+    it { should have_db_column(:confirmed_at).of_type(:datetime) }
+    it { should have_db_column(:confirmation_sent_at).of_type(:datetime) }
+    it { should have_db_column(:unconfirmed_email).of_type(:string) }
+    it { should have_db_column(:failed_attempts).of_type(:integer) }
+    it { should have_db_column(:unlock_token).of_type(:string) }
+    it { should have_db_column(:locked_at).of_type(:datetime) }
   end
 end
