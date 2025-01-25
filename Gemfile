@@ -69,3 +69,5 @@ group :development do
   gem "guard-rspec"
   gem "guard-bundler"
 end
+
+gem "faker", "~> 3.5"

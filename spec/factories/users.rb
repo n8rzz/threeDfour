@@ -1,10 +1,10 @@
 FactoryBot.define do
   factory :user do
-    sequence(:email) { |n| "user#{n}@example.com" }
-    sequence(:username) { |n| "user#{n}" }
+    sequence(:email) { |n| "#{Faker::Internet.unique.username}#{n}@#{Faker::Internet.domain_name}" }
+    sequence(:username) { |n| "#{Faker::Internet.unique.username(specifier: 5..10)}#{n}" }
     password { "password123" }
     password_confirmation { "password123" }
-    avatar_url { "https://example.com/avatar.jpg" }
+    avatar_url { Faker::Avatar.image }
     confirmed_at { nil }
     confirmation_sent_at { Time.current }
     failed_attempts { 0 }
