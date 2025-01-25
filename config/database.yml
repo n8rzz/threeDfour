@@ -1,0 +1,21 @@
+default: &default
+  adapter: postgresql
+  encoding: unicode
+  pool: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
+  host: localhost
+  username: postgres
+  password:
+  port: 5432
+
+development:
+  <<: *default
+  database: threeDfour_development
+
+test:
+  <<: *default
+  database: threeDfour_test
+
+production:
+  <<: *default
+  database: threeDfour_production
+  url: <%= ENV['DATABASE_URL'] %>
