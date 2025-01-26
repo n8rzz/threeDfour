@@ -10,9 +10,24 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_01_25_211151) do
+ActiveRecord::Schema[8.0].define(version: 2025_01_26_011128) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
+
+  create_table "games", force: :cascade do |t|
+    t.string "status", default: "waiting", null: false
+    t.bigint "player1_id", null: false
+    t.bigint "player2_id"
+    t.bigint "current_turn_id", null: false
+    t.json "board_state", default: {"state"=>{}}, null: false
+    t.bigint "winner_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["current_turn_id"], name: "index_games_on_current_turn_id"
+    t.index ["player1_id"], name: "index_games_on_player1_id"
+    t.index ["player2_id"], name: "index_games_on_player2_id"
+    t.index ["winner_id"], name: "index_games_on_winner_id"
+  end
 
   create_table "users", force: :cascade do |t|
     t.string "email", default: "", null: false
@@ -42,4 +57,9 @@ ActiveRecord::Schema[8.0].define(version: 2025_01_25_211151) do
     t.index ["unlock_token"], name: "index_users_on_unlock_token", unique: true
     t.index ["username"], name: "index_users_on_username", unique: true
   end
+
+  add_foreign_key "games", "users", column: "current_turn_id"
+  add_foreign_key "games", "users", column: "player1_id"
+  add_foreign_key "games", "users", column: "player2_id"
+  add_foreign_key "games", "users", column: "winner_id"
 end
