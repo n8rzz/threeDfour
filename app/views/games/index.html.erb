@@ -1,6 +1,6 @@
 <div class="container mx-auto px-4 py-8">
   <div class="flex justify-between items-center mb-8">
-    <h1 class="text-2xl font-bold">Available Games</h1>
+    <h1 class="text-3xl font-bold mb-6">Available Games</h1>
     <%= link_to 'New Game', new_game_path, class: 'bg-green-500 text-white px-4 py-2 rounded' %>
   </div>
 
@@ -8,11 +8,15 @@
     <%= link_to 'View My Games', my_games_games_path, class: 'text-blue-500 hover:underline' %>
   </div>
 
-  <% if @games.any? %>
-    <div class="space-y-4">
-      <%= render partial: 'game', collection: @games %>
-    </div>
-  <% else %>
-    <p class="text-gray-600">No games available to join.</p>
-  <% end %>
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+    <% if @games.any? %>
+      <%= render partial: "game", collection: @games %>
+    <% else %>
+      <p class="text-gray-500 col-span-full text-center py-8">No games available to join.</p>
+    <% end %>
+  </div>
+
+  <div class="mt-8">
+    <%= link_to 'Create New Game', new_game_path, class: "bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded" %>
+  </div>
 </div>

@@ -47,7 +47,7 @@ class GamesController < ApplicationController
     return redirect_to @game, alert: 'You cannot abandon this game.' unless @game.player1 == current_user || @game.player2 == current_user
     
     begin
-      if @game.abandon! && @game.save
+      if @game.save && @game.abandon!
         redirect_to my_games_games_path, notice: 'Game abandoned.'
       else
         redirect_to @game, alert: 'Could not abandon the game.'

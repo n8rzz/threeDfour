@@ -1,23 +1,50 @@
-<div class="container mx-auto px-4 py-8">
-  <div class="flex justify-between items-center mb-8">
-    <h1 class="text-2xl font-bold">My Games</h1>
-    <%= link_to 'New Game', new_game_path, class: 'bg-green-500 text-white px-4 py-2 rounded' %>
+<div class="space-y-8">
+  <div>
+    <h1 class="text-3xl font-bold mb-6">My Games</h1>
+    <%= link_to 'Create New Game', new_game_path, class: "bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded" %>
   </div>
 
-  <div class="mb-8">
-    <%= link_to 'View Available Games', games_path, class: 'text-blue-500 hover:underline' %>
-  </div>
+  <% active_games = @games.select { |g| g.in_progress? } %>
+  <% if active_games.any? %>
+    <section>
+      <h2 class="text-2xl font-semibold mb-4">Active Games</h2>
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <%= render partial: "game", collection: active_games %>
+      </div>
+    </section>
+  <% end %>
 
-  <% if @games.any? %>
-    <div class="space-y-4">
-      <% @games.group_by(&:status).each do |status, games| %>
-        <div class="mb-8">
-          <h2 class="text-xl font-semibold mb-4 capitalize"><%= status %> Games</h2>
-          <%= render partial: 'game', collection: games %>
-        </div>
-      <% end %>
-    </div>
-  <% else %>
-    <p class="text-gray-600">You don't have any games yet.</p>
+  <% waiting_games = @games.select { |g| g.waiting? } %>
+  <% if waiting_games.any? %>
+    <section>
+      <h2 class="text-2xl font-semibold mb-4">Waiting for Players</h2>
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <%= render partial: "game", collection: waiting_games %>
+      </div>
+    </section>
+  <% end %>
+
+  <% completed_games = @games.select { |g| g.complete? } %>
+  <% if completed_games.any? %>
+    <section>
+      <h2 class="text-2xl font-semibold mb-4">Completed Games</h2>
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <%= render partial: "game", collection: completed_games %>
+      </div>
+    </section>
+  <% end %>
+
+  <% abandoned_games = @games.select { |g| g.abandoned? } %>
+  <% if abandoned_games.any? %>
+    <section>
+      <h2 class="text-2xl font-semibold mb-4">Abandoned Games</h2>
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <%= render partial: "game", collection: abandoned_games %>
+      </div>
+    </section>
+  <% end %>
+
+  <% if @games.empty? %>
+    <p class="text-gray-500 text-center py-8">You don't have any games yet.</p>
   <% end %>
 </div>

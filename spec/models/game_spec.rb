@@ -39,8 +39,8 @@ RSpec.describe Game, type: :model do
       end
 
       it 'cannot set winner without player2' do
-        game = build(:complete_game, player1: player1, current_turn: player1)
-        game.player2 = nil
+        game = build(:game, status: 'complete', player1: player1, current_turn: player1)
+        game.winner = winner
         expect(game).not_to be_valid
         expect(game.errors[:winner]).to include("can't be set unless game is complete with two players")
       end

@@ -40,7 +40,7 @@ class Game < ApplicationRecord
 
   def validate_winner
     return unless winner_id
-    if waiting? || abandoned? || !player2_id
+    if !player2_id || waiting? || abandoned?
       errors.add(:winner, "can't be set unless game is complete with two players")
     end
   end

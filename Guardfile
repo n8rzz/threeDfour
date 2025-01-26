@@ -27,6 +27,7 @@ guard :rspec, cmd: 'bundle exec rspec' do
     [
       "spec/routing/#{m[1]}_routing_spec.rb",
       "spec/controllers/#{m[1]}_controller_spec.rb",
+      "spec/requests/#{m[1]}_spec.rb",
       "spec/system/#{m[1]}_spec.rb"
     ]
   end
