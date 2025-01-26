@@ -3,13 +3,11 @@ class GamesController < ApplicationController
   before_action :set_game, only: [:show, :join, :abandon]
 
   def index
-    @games = Game.where(status: :waiting).where.not(player1: current_user)
+    @games = Game.available_to_join(current_user)
   end
 
   def my_games
-    @games = Game.where(player1: current_user)
-                 .or(Game.where(player2: current_user))
-                 .order(updated_at: :desc)
+    @games = Game.for_user(current_user).by_recent
   end
 
   def show
@@ -26,36 +24,38 @@ class GamesController < ApplicationController
     @game.board_state = { state: {} }
 
     if @game.save
-      redirect_to @game, notice: 'Game was successfully created.'
+      redirect_with_success(@game, 'Game was successfully created.')
     else
       render :new, status: :unprocessable_entity
     end
   end
 
   def join
-    return redirect_to @game, alert: 'Cannot join this game.' unless @game.waiting? && @game.player1 != current_user
+    return redirect_with_error(@game, 'Game is not available to join.') unless can_join_game?
 
     @game.player2 = current_user
-    notice_or_alert = @game.save && @game.start! ? 
-      { notice: 'Successfully joined the game.' } :
-      { alert: 'Could not join the game.' }
     
-    redirect_to @game, notice_or_alert
+    if @game.save && @game.start!
+      redirect_with_success(@game, 'Successfully joined the game.')
+    else
+      error_message = join_error_message
+      redirect_with_error(@game, error_message)
+    end
+  rescue AASM::InvalidTransition
+    redirect_with_error(@game, 'Game cannot be started.')
   end
 
   def abandon
-    return redirect_to @game, alert: 'You cannot abandon this game.' unless @game.player1 == current_user || @game.player2 == current_user
-    
-    begin
-      if @game.save && @game.abandon!
-        redirect_to my_games_games_path, notice: 'Game abandoned.'
-      else
-        redirect_to @game, alert: 'Could not abandon the game.'
-      end
-    rescue => e
-      Rails.logger.error "Game abandon error: #{e.message}"
-      redirect_to @game, alert: 'Could not abandon the game.'
+    return redirect_with_error(@game, 'You cannot abandon this game.') unless can_abandon_game?
+
+    if @game.abandon!
+      redirect_with_success(my_games_games_path, 'Game abandoned.')
+    else
+      redirect_with_error(@game, 'Could not abandon the game.')
     end
+  rescue => e
+    Rails.logger.error "Game abandon error: #{e.message}"
+    redirect_with_error(@game, 'Could not abandon the game.')
   end
 
   private
@@ -65,7 +65,39 @@ class GamesController < ApplicationController
   end
 
   def game_params
-    # We don't actually need any params from the form since we set everything in the controller
     {}
+  end
+
+  def can_join_game?
+    @game.waiting? && @game.player1 != current_user
+  end
+
+  def can_abandon_game?
+    return false unless @game.waiting? || @game.in_progress?
+    @game.player1 == current_user || @game.player2 == current_user
+  end
+
+  def join_error_message
+    if @game.errors[:player2].any?
+      'Could not join as player 2.'
+    elsif @game.errors[:current_turn].any?
+      'Invalid turn state for game.'
+    else
+      'Could not join the game.'
+    end
+  end
+
+  def redirect_with_success(path, message)
+    respond_to do |format|
+      format.html { redirect_to path, notice: message }
+      format.turbo_stream { redirect_to path, notice: message }
+    end
+  end
+
+  def redirect_with_error(path, message)
+    respond_to do |format|
+      format.html { redirect_to path, alert: message }
+      format.turbo_stream { redirect_to path, alert: message }
+    end
   end
 end

@@ -11,6 +11,14 @@ class Game < ApplicationRecord
   validate :validate_winner
   validate :validate_current_turn
 
+  scope :by_recent, -> { order(updated_at: :desc) }
+  scope :for_user, ->(user) { 
+    where(player1: user).or(where(player2: user))
+  }
+  scope :available_to_join, ->(user) {
+    where(status: :waiting).where.not(player1: user)
+  }
+
   aasm column: :status do
     state :waiting, initial: true
     state :in_progress
