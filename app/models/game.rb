@@ -35,6 +35,7 @@ class Game < ApplicationRecord
   def validate_game_state
     return if waiting?
     errors.add(:player2, "must be present for in-progress game") if in_progress? && !player2
+    errors.add(:player2, "must be present for complete game") if complete? && !player2
   end
 
   def validate_winner

@@ -1,13 +1,13 @@
 puts 'Creating users...'
 
 # Admin user - fully confirmed
-admin = User.find_or_initialize_by(email: 'admin@example.com')
+admin = User.find_or_initialize_by(email: 'starship@example.com')
 unless admin.persisted?
-  admin.username = Faker::Internet.unique.username(specifier: 5..10)
-  admin.password = 'password123'
-  admin.password_confirmation = 'password123'
+  admin.username = 'starship'
+  admin.password = 'skyd!ve'
+  admin.password_confirmation = 'skyd!ve'
   admin.avatar_url = Faker::Avatar.image
-  admin.skip_confirmation!  # This sets confirmed_at and skips confirmation
+  admin.skip_confirmation! 
   admin.save!
 end
 

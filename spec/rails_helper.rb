@@ -34,6 +34,7 @@ begin
 rescue ActiveRecord::PendingMigrationError => e
   abort e.to_s.strip
 end
+
 RSpec.configure do |config|
   # Remove this line if you're not using ActiveRecord or ActiveRecord fixtures
   config.fixture_paths = [
@@ -106,6 +107,10 @@ RSpec.configure do |config|
   
   # Add time travel helpers
   config.include ActiveSupport::Testing::TimeHelpers
+
+  ActiveSupport.on_load(:action_mailer) do
+    Rails.application.reload_routes_unless_loaded
+  end
 end
 
 # Shoulda Matchers configuration

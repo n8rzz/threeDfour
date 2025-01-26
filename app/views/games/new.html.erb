@@ -1,0 +1,23 @@
+<div class="container mx-auto px-4 py-8">
+  <div class="mb-8">
+    <h1 class="text-2xl font-bold">New Game</h1>
+  </div>
+
+  <%= form_with(model: @game, local: true, class: 'space-y-4') do |f| %>
+    <% if @game.errors.any? %>
+      <div class="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded">
+        <h2 class="text-lg font-semibold"><%= pluralize(@game.errors.count, "error") %> prohibited this game from being saved:</h2>
+        <ul class="list-disc list-inside">
+          <% @game.errors.full_messages.each do |message| %>
+            <li><%= message %></li>
+          <% end %>
+        </ul>
+      </div>
+    <% end %>
+
+    <div class="flex justify-end space-x-4">
+      <%= f.submit 'Create Game', class: 'bg-green-500 text-white px-4 py-2 rounded' %>
+      <%= link_to 'Cancel', games_path, class: 'bg-gray-300 text-gray-700 px-4 py-2 rounded' %>
+    </div>
+  <% end %>
+</div>

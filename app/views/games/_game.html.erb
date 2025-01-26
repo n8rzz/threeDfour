@@ -1,0 +1,45 @@
+<div class="border rounded p-4 mb-4">
+  <div class="flex justify-between items-center mb-4">
+    <div>
+      <h3 class="text-lg font-semibold">
+        Game #<%= game.id %>
+      </h3>
+      <p class="text-sm text-gray-600">
+        Status: <%= game.status %>
+      </p>
+    </div>
+    <div>
+      <% if game.waiting? && game.player1 != current_user %>
+        <%= button_to 'Join Game', join_game_path(game), method: :patch, class: 'bg-blue-500 text-white px-4 py-2 rounded' %>
+      <% end %>
+      
+      <% if (game.player1 == current_user || game.player2 == current_user) && (game.waiting? || game.in_progress?) %>
+        <%= button_to 'Abandon Game', abandon_game_path(game), method: :patch, 
+            data: { confirm: 'Are you sure you want to abandon this game?' },
+            class: 'bg-red-500 text-white px-4 py-2 rounded' %>
+      <% end %>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-2 gap-4">
+    <div>
+      <p class="font-medium">Player 1:</p>
+      <p><%= game.player1.username %></p>
+    </div>
+    <div>
+      <p class="font-medium">Player 2:</p>
+      <p><%= game.player2&.username || 'Waiting...' %></p>
+    </div>
+  </div>
+
+  <% if game.complete? %>
+    <div class="mt-4">
+      <p class="font-medium">Winner:</p>
+      <p><%= game.winner.username %></p>
+    </div>
+  <% end %>
+
+  <div class="mt-4">
+    <%= link_to 'View Game', game_path(game), class: 'text-blue-500 hover:underline' %>
+  </div>
+</div> 

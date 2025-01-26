@@ -7,15 +7,14 @@ RSpec.describe Game, type: :model do
     it { should belong_to(:current_turn).class_name('User') }
     it { should belong_to(:winner).class_name('User').optional }
   end
-
+  
   describe 'validations' do
     it { should validate_presence_of(:board_state) }
 
     context 'when game is in_progress' do
-      subject { build(:game, :in_progress) }
+      subject { build(:game, status: 'in_progress') }
       
       it 'requires player2' do
-        subject.player2 = nil
         expect(subject).not_to be_valid
         expect(subject.errors[:player2]).to include('must be present for in-progress game')
       end
