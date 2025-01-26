@@ -10,9 +10,19 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_01_26_011128) do
+ActiveRecord::Schema[8.0].define(version: 2025_01_26_215705) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
+
+  create_table "game_sessions", force: :cascade do |t|
+    t.bigint "game_id", null: false
+    t.bigint "user_id", null: false
+    t.string "session_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["game_id"], name: "index_game_sessions_on_game_id"
+    t.index ["user_id"], name: "index_game_sessions_on_user_id"
+  end
 
   create_table "games", force: :cascade do |t|
     t.string "status", default: "waiting", null: false
@@ -58,6 +68,8 @@ ActiveRecord::Schema[8.0].define(version: 2025_01_26_011128) do
     t.index ["username"], name: "index_users_on_username", unique: true
   end
 
+  add_foreign_key "game_sessions", "games"
+  add_foreign_key "game_sessions", "users"
   add_foreign_key "games", "users", column: "current_turn_id"
   add_foreign_key "games", "users", column: "player1_id"
   add_foreign_key "games", "users", column: "player2_id"

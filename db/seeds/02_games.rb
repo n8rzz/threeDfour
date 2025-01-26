@@ -24,11 +24,7 @@ in_progress = Game.find_or_initialize_by(
 unless in_progress.persisted?
   in_progress.current_turn = user
   in_progress.board_state = { 
-    state: {
-      'A1': 'X',
-      'B2': 'O',
-      'C3': 'X'
-    }
+    state: {}
   }
   in_progress.save!
 end
@@ -43,15 +39,7 @@ completed = Game.find_or_initialize_by(
 unless completed.persisted?
   completed.current_turn = user
   completed.board_state = {
-    state: {
-      'A1': 'X',
-      'A2': 'O',
-      'A3': 'X',
-      'B1': 'O',
-      'B2': 'X',
-      'B3': 'O',
-      'C1': 'X'
-    }
+    state: {}
   }
   completed.save!
 end
@@ -77,10 +65,7 @@ abandoned_playing = Game.find_or_initialize_by(
 unless abandoned_playing.persisted?
   abandoned_playing.current_turn = admin
   abandoned_playing.board_state = {
-    state: {
-      'A1': 'X',
-      'B1': 'O'
-    }
+    state: {}
   }
   abandoned_playing.save!
 end

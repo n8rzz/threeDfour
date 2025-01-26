@@ -34,6 +34,10 @@ class Game < ApplicationRecord
     end
 
     event :abandon do
+      before do
+        self.current_turn = player1
+      end
+      
       transitions from: [:waiting, :in_progress], to: :abandoned
     end
   end

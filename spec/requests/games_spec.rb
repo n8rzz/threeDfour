@@ -112,12 +112,24 @@ RSpec.describe "Games", type: :request do
 
   describe "PATCH /games/:id/abandon" do
     context "when user is player1" do
-      let(:game) { create(:waiting_game, player1: user, current_turn: user) }
+      context "with a waiting game" do
+        let(:game) { create(:waiting_game, player1: user, current_turn: user) }
 
-      it "allows abandoning the game" do
-        patch abandon_game_path(game)
-        expect(game.reload).to be_abandoned
-        expect(response).to redirect_to(my_games_games_path)
+        it "allows abandoning the game" do
+          patch abandon_game_path(game)
+          expect(game.reload).to be_abandoned
+          expect(response).to redirect_to(my_games_games_path)
+        end
+      end
+
+      context "with an in-progress game" do
+        let(:game) { create(:in_progress_game, player1: user, player2: other_user) }
+
+        it "allows abandoning the game" do
+          patch abandon_game_path(game)
+          expect(game.reload).to be_abandoned
+          expect(response).to redirect_to(my_games_games_path)
+        end
       end
     end
 

@@ -46,16 +46,16 @@ class GamesController < ApplicationController
   end
 
   def abandon
-    return redirect_with_error(@game, 'You cannot abandon this game.') unless can_abandon_game?
+    return redirect_with_error(game_path(@game), 'You cannot abandon this game.') unless can_abandon_game?
 
     if @game.abandon!
       redirect_with_success(my_games_games_path, 'Game abandoned.')
     else
-      redirect_with_error(@game, 'Could not abandon the game.')
+      redirect_with_error(my_games_games_path, 'Could not abandon the game.')
     end
   rescue => e
     Rails.logger.error "Game abandon error: #{e.message}"
-    redirect_with_error(@game, 'Could not abandon the game.')
+    redirect_with_error(my_games_games_path, 'Could not abandon the game.')
   end
 
   private
