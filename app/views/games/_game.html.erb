@@ -37,11 +37,11 @@
     <%= link_to 'View Game', game_path(game), class: "inline-block bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 px-4 rounded" %>
     
     <% if game.waiting? && game.player1 != current_user %>
-      <%= button_to 'Join Game', join_game_path(game), method: :post, class: "inline-block bg-green-500 hover:bg-green-600 text-white font-medium py-2 px-4 rounded" %>
+      <%= button_to 'Join Game', join_game_path(game), method: :patch, class: "inline-block bg-green-500 hover:bg-green-600 text-white font-medium py-2 px-4 rounded" %>
     <% end %>
 
     <% if (game.player1 == current_user || game.player2 == current_user) && (game.waiting? || game.in_progress?) %>
-      <%= button_to 'Abandon Game', abandon_game_path(game), method: :post, class: "inline-block bg-red-500 hover:bg-red-600 text-white font-medium py-2 px-4 rounded", data: { confirm: 'Are you sure?' } %>
+      <%= button_to 'Abandon Game', abandon_game_path(game), method: :patch, class: "inline-block bg-red-500 hover:bg-red-600 text-white font-medium py-2 px-4 rounded", data: { confirm: 'Are you sure?' } %>
     <% end %>
   </div>
 </div> 
