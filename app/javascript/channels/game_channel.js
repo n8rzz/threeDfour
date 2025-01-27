@@ -1,8 +1,6 @@
 import consumer from "channels/consumer";
 
 function connectToGameChannel() {
-  console.log("connectToGameChannel");
-
   const gameContainer = document.querySelector("[data-game-id]");
 
   if (!gameContainer) {
@@ -10,6 +8,11 @@ function connectToGameChannel() {
   }
 
   const gameId = gameContainer.dataset.gameId;
+
+  // Return early if we're already subscribed to this game
+  if (window.gameChannel && window.gameChannel.gameId === gameId) {
+    return;
+  }
 
   if (window.gameChannel) {
     window.gameChannel.unsubscribe();
@@ -20,6 +23,7 @@ function connectToGameChannel() {
     {
       connected() {
         console.log("Connected to game channel", gameId);
+        this.gameId = gameId; // Store the gameId on the channel object
       },
 
       disconnected() {
@@ -28,7 +32,6 @@ function connectToGameChannel() {
 
       received(data) {
         console.log("Received data:", data);
-        // Handle incoming game updates here
       },
     }
   );
