@@ -11,16 +11,16 @@ RSpec.describe 'Game Creation', type: :system do
 
   it 'allows a user to create a new game' do
     visit new_game_path
-    
+
     # Since we don't have any form fields yet, just click create
     click_button 'Create Game'
 
     expect(page).to have_content('Game was successfully created.')
     expect(page).to have_current_path(game_path(Game.last))
-    
+
     game = Game.last
     expect(game.player1).to eq(user)
     expect(game.current_turn).to eq(user)
     expect(game.status).to eq('waiting')
   end
-end 
+end

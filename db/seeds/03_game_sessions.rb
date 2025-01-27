@@ -19,4 +19,4 @@ Game.find_each do |game|
   end
 end
 
-puts "Created #{GameSession.count} game sessions" 
+puts "Created #{GameSession.count} game sessions"

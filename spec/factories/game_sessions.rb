@@ -1,6 +1,6 @@
 FactoryBot.define do
   factory :game_session do
-    association :game, factory: [:game, :waiting]
+    association :game, factory: [ :game, :waiting ]
     association :user
     sequence(:session_id) { |n| "ws_#{SecureRandom.hex(8)}_#{n}" }
 

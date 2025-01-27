@@ -7,7 +7,7 @@ unless admin.persisted?
   admin.password = 'skyd!ve'
   admin.password_confirmation = 'skyd!ve'
   admin.avatar_url = Faker::Avatar.image
-  admin.skip_confirmation! 
+  admin.skip_confirmation!
   admin.save!
 end
 
@@ -17,7 +17,7 @@ unless player2.persisted?
   player2.password = 'skyd!ve'
   player2.password_confirmation = 'skyd!ve'
   player2.avatar_url = Faker::Avatar.image
-  player2.skip_confirmation! 
+  player2.skip_confirmation!
   player2.save!
 end
 
@@ -43,4 +43,4 @@ unless pending.persisted?
   pending.save!
 end
 
-puts 'Finished creating users' 
+puts 'Finished creating users'

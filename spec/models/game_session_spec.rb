@@ -8,7 +8,7 @@ RSpec.describe GameSession, type: :model do
 
   describe 'validations' do
     it { should validate_presence_of(:session_id) }
-    
+
     it 'validates uniqueness of session_id' do
       create(:game_session)
       should validate_uniqueness_of(:session_id)

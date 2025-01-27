@@ -5,14 +5,14 @@ RSpec.describe User, type: :model do
     subject { build(:user) }
 
     it { should validate_presence_of(:username) }
-    
+
     describe 'uniqueness' do
       before { create(:user, :confirmed) }
-      
+
       it { should validate_uniqueness_of(:username) }
       it { should validate_uniqueness_of(:email).case_insensitive }
     end
-    
+
     context 'when avatar_url is present' do
       it 'validates avatar_url format' do
         user = build(:user, avatar_url: 'not-a-url')

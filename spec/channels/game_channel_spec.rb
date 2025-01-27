@@ -11,7 +11,7 @@ RSpec.describe GameChannel, type: :channel do
     context 'with valid game_id' do
       it 'subscribes to the correct stream' do
         subscribe(game_id: 1)
-        
+
         expect(subscription).to be_confirmed
         expect(subscription).to have_stream_from("game_1")
       end
@@ -20,7 +20,7 @@ RSpec.describe GameChannel, type: :channel do
     context 'with missing game_id' do
       it 'does not subscribe to any stream' do
         subscribe(game_id: nil)
-        
+
         expect(subscription).to be_confirmed
         expect(subscription.streams).to be_empty
       end
@@ -41,10 +41,10 @@ RSpec.describe GameChannel, type: :channel do
   describe '#receive' do
     it 'returns early when game is not found' do
       subscribe(game_id: 1)
-      
+
       expect(Game).to receive(:find).with("123").and_return(nil)
       expect(ActionCable.server).not_to receive(:broadcast)
-      
+
       perform :receive, { 'game_id' => '123', 'user_id' => 1, 'move' => 'some_move' }
     end
 
@@ -61,7 +61,7 @@ RSpec.describe GameChannel, type: :channel do
   describe '#unsubscribed' do
     it 'clears all streams' do
       subscribe(game_id: 1)
-      
+
       expect(subscription.streams).not_to be_empty
       subscription.unsubscribe_from_channel
       expect(subscription.streams).to be_empty

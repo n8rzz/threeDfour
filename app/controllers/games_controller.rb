@@ -1,6 +1,6 @@
 class GamesController < ApplicationController
   before_action :authenticate_user!
-  before_action :set_game, only: [:show, :join, :abandon]
+  before_action :set_game, only: [ :show, :join, :abandon ]
 
   def index
     @games = Game.available_to_join(current_user)
@@ -24,38 +24,38 @@ class GamesController < ApplicationController
     @game.board_state = { state: {} }
 
     if @game.save
-      redirect_with_success(@game, 'Game was successfully created.')
+      redirect_with_success(@game, "Game was successfully created.")
     else
       render :new, status: :unprocessable_entity
     end
   end
 
   def join
-    return redirect_with_error(@game, 'Game is not available to join.') unless can_join_game?
+    return redirect_with_error(@game, "Game is not available to join.") unless can_join_game?
 
     @game.player2 = current_user
-    
+
     if @game.save && @game.start!
-      redirect_with_success(@game, 'Successfully joined the game.')
+      redirect_with_success(@game, "Successfully joined the game.")
     else
       error_message = join_error_message
       redirect_with_error(@game, error_message)
     end
   rescue AASM::InvalidTransition
-    redirect_with_error(@game, 'Game cannot be started.')
+    redirect_with_error(@game, "Game cannot be started.")
   end
 
   def abandon
-    return redirect_with_error(game_path(@game), 'You cannot abandon this game.') unless can_abandon_game?
+    return redirect_with_error(game_path(@game), "You cannot abandon this game.") unless can_abandon_game?
 
     if @game.abandon!
-      redirect_with_success(my_games_games_path, 'Game abandoned.')
+      redirect_with_success(my_games_games_path, "Game abandoned.")
     else
-      redirect_with_error(my_games_games_path, 'Could not abandon the game.')
+      redirect_with_error(my_games_games_path, "Could not abandon the game.")
     end
   rescue => e
     Rails.logger.error "Game abandon error: #{e.message}"
-    redirect_with_error(my_games_games_path, 'Could not abandon the game.')
+    redirect_with_error(my_games_games_path, "Could not abandon the game.")
   end
 
   private
@@ -79,11 +79,11 @@ class GamesController < ApplicationController
 
   def join_error_message
     if @game.errors[:player2].any?
-      'Could not join as player 2.'
+      "Could not join as player 2."
     elsif @game.errors[:current_turn].any?
-      'Invalid turn state for game.'
+      "Invalid turn state for game."
     else
-      'Could not join the game.'
+      "Could not join the game."
     end
   end
 

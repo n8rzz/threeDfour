@@ -23,7 +23,7 @@ in_progress = Game.find_or_initialize_by(
 )
 unless in_progress.persisted?
   in_progress.current_turn = user
-  in_progress.board_state = { 
+  in_progress.board_state = {
     state: {}
   }
   in_progress.save!
@@ -70,4 +70,4 @@ unless abandoned_playing.persisted?
   abandoned_playing.save!
 end
 
-puts 'Finished creating games' 
+puts 'Finished creating games'

@@ -25,7 +25,7 @@ RSpec.describe "Games", type: :request do
   describe "GET /games/:id" do
     it "shows the game details" do
       game = create(:waiting_game, player1: user, current_turn: user)
-      
+
       get game_path(game)
       expect(response).to have_http_status(:success)
       expect(response.body).to include(game.player1.username)
@@ -34,7 +34,7 @@ RSpec.describe "Games", type: :request do
 
     it "shows both players for in-progress games" do
       game = create(:in_progress_game, player1: user, player2: other_user)
-      
+
       get game_path(game)
       expect(response).to have_http_status(:success)
       expect(response.body).to include(game.player1.username)
@@ -68,10 +68,10 @@ RSpec.describe "Games", type: :request do
   describe "GET /games/my_games" do
     it "shows games where user is player1 or player2" do
       my_game1 = create(:waiting_game, player1: user, current_turn: user)
-      
+
       other_player = create(:user, :confirmed)
       my_game2 = create(:in_progress_game, player1: other_player, player2: user, current_turn: other_player)
-      
+
       another_player = create(:user, :confirmed)
       other_game = create(:waiting_game, player1: another_player, current_turn: another_player)
 

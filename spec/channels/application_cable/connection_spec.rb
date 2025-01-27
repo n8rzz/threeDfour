@@ -19,4 +19,4 @@ RSpec.describe ApplicationCable::Connection, type: :channel do
     connection = described_class.new(ActionCable.server, env)
     expect { connection.connect }.to raise_error(ActionCable::Connection::Authorization::UnauthorizedError)
   end
-end 
+end

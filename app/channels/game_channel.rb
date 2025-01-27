@@ -1,7 +1,7 @@
 class GameChannel < ApplicationCable::Channel
   def subscribed
     @game_id = params[:game_id]
-    
+
     reject and return unless current_user
     stream_from "game_#{@game_id}" if @game_id
   end
@@ -11,16 +11,16 @@ class GameChannel < ApplicationCable::Channel
   end
 
   def receive(data)
-    game = Game.find(data['game_id'])
-    
+    game = Game.find(data["game_id"])
+
     return unless game
 
     ActionCable.server.broadcast(
       "game_#{game.id}",
       {
-        type: 'move',
-        user_id: data['user_id'],
-        move: data['move']
+        type: "move",
+        user_id: data["user_id"],
+        move: data["move"]
       }
     )
   end

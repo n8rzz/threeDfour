@@ -103,7 +103,7 @@ RSpec.configure do |config|
   config.include Devise::Test::IntegrationHelpers, type: :system
   config.include Devise::Test::IntegrationHelpers, type: :request
   config.include Devise::Test::ControllerHelpers, type: :controller
-  
+
   # Add time travel helpers
   config.include ActiveSupport::Testing::TimeHelpers
 

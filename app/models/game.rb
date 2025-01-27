@@ -1,10 +1,10 @@
 class Game < ApplicationRecord
   include AASM
 
-  belongs_to :player1, class_name: 'User'
-  belongs_to :player2, class_name: 'User', optional: true
-  belongs_to :current_turn, class_name: 'User'
-  belongs_to :winner, class_name: 'User', optional: true
+  belongs_to :player1, class_name: "User"
+  belongs_to :player2, class_name: "User", optional: true
+  belongs_to :current_turn, class_name: "User"
+  belongs_to :winner, class_name: "User", optional: true
 
   validates :board_state, presence: true
   validate :validate_game_state
@@ -12,7 +12,7 @@ class Game < ApplicationRecord
   validate :validate_current_turn
 
   scope :by_recent, -> { order(updated_at: :desc) }
-  scope :for_user, ->(user) { 
+  scope :for_user, ->(user) {
     where(player1: user).or(where(player2: user))
   }
   scope :available_to_join, ->(user) {
@@ -37,8 +37,8 @@ class Game < ApplicationRecord
       before do
         self.current_turn = player1
       end
-      
-      transitions from: [:waiting, :in_progress], to: :abandoned
+
+      transitions from: [ :waiting, :in_progress ], to: :abandoned
     end
   end
 
@@ -59,7 +59,7 @@ class Game < ApplicationRecord
 
   def validate_current_turn
     if in_progress?
-      unless [player1_id, player2_id].include?(current_turn_id)
+      unless [ player1_id, player2_id ].include?(current_turn_id)
         errors.add(:current_turn, "must be one of the players")
       end
     else
