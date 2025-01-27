@@ -1,4 +1,6 @@
 Rails.application.routes.draw do
+  mount ActionCable.server => '/cable'
+
   get "games/index"
   get "games/show"
   get "games/new"
@@ -26,6 +28,7 @@ Rails.application.routes.draw do
       patch :abandon
       patch :join
     end
+
     collection do
       get :my_games
     end

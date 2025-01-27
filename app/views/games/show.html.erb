@@ -1,4 +1,4 @@
-<div class="container mx-auto px-4 py-8">
+<div class="container mx-auto px-4 py-8" data-game-id="<%= @game.id %>">
   <div class="mb-8">
     <div class="flex justify-between items-center">
       <h1 class="text-2xl font-bold">Game #<%= @game.id %></h1>
@@ -77,6 +77,13 @@
             class: 'bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600' %>
       <% end %>
 
+      <button type="button" 
+              onclick="sendRandomMove()"
+              <%= 'disabled' unless @game.in_progress? %>
+              class="bg-sky-500 text-white px-4 py-2 rounded hover:bg-sky-600 border">
+        Send Random Move
+      </button>
+
       <% if (@game.player1 == current_user || @game.player2 == current_user) && (@game.waiting? || @game.in_progress?) %>
         <%= button_to 'Abandon Game', abandon_game_path(@game), method: :patch,
             data: { confirm: 'Are you sure you want to abandon this game?' },
@@ -85,3 +92,21 @@
     </div>
   </div>
 </div>
+
+<%= javascript_tag nonce: true do %>
+  function sendRandomMove() {
+    const randomArray = Array.from({length: 3}, () => Math.floor(Math.random() * 4));
+    
+    console.log("sendRandomMove", randomArray);
+    
+    if (window.gameChannel) {
+      window.gameChannel.send({
+        game_id: <%= @game.id %>,
+        user_id: <%= current_user.id %>,
+        move: randomArray
+      });
+      
+      console.log('Sent random move:', randomArray);
+    }
+  }
+<% end %>

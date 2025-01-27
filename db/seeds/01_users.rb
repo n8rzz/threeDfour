@@ -11,6 +11,16 @@ unless admin.persisted?
   admin.save!
 end
 
+player2 = User.find_or_initialize_by(email: 'player2@example.com')
+unless player2.persisted?
+  player2.username = '2player2'
+  player2.password = 'skyd!ve'
+  player2.password_confirmation = 'skyd!ve'
+  player2.avatar_url = Faker::Avatar.image
+  player2.skip_confirmation! 
+  player2.save!
+end
+
 # Regular confirmed user
 user = User.find_or_initialize_by(email: 'user@example.com')
 unless user.persisted?
