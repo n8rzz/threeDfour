@@ -1,10 +1,12 @@
 Rails.application.routes.draw do
   mount ActionCable.server => "/cable"
 
-  get "games/index"
-  get "games/show"
-  get "games/new"
-  get "games/my_games"
+  resources :games do
+    collection do
+      get :my_games
+    end
+  end
+  
   devise_for :users
   # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
 
@@ -16,8 +18,7 @@ Rails.application.routes.draw do
   # get "manifest" => "rails/pwa#manifest", as: :pwa_manifest
   # get "service-worker" => "rails/pwa#service_worker", as: :pwa_service_worker
 
-  # Defines the root path route ("/")
-  root "home#index"
+  root "static_pages#index"
 
   if Rails.env.development?
     mount LetterOpenerWeb::Engine, at: "/letter_opener"
