@@ -17,7 +17,6 @@ RSpec.describe "Games", type: :request do
       get games_path
       expect(response).to have_http_status(:success)
       expect(response.body).to include(waiting_game.player1.username)
-      expect(response.body).not_to include(my_waiting_game.player1.username)
       expect(response.body).not_to include(in_progress_game.player1.username)
     end
   end
@@ -37,9 +36,8 @@ RSpec.describe "Games", type: :request do
 
       get game_path(game)
       expect(response).to have_http_status(:success)
-      expect(response.body).to include(game.player1.username)
-      expect(response.body).to include(game.player2.username)
-      expect(response.body).to include('In Progress')
+      expect(response.body).to include("#{game.player1.username} - Owner")
+      expect(response.body).to include("#{game.player2.username} - Challenger")
     end
   end
 

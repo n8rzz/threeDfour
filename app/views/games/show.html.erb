@@ -1,94 +1,72 @@
-<div class="container mx-auto px-4 py-8" data-game-id="<%= @game.id %>">
-  <div class="mb-8">
-    <div class="flex justify-between items-center">
-      <h1 class="text-2xl font-bold">Game #<%= @game.id %></h1>
-      <div class="space-x-4">
-        <%= link_to 'Back to Games', games_path, class: 'text-blue-500 hover:underline' %>
-        <%= link_to 'My Games', my_games_games_path, class: 'text-blue-500 hover:underline' %>
-      </div>
-    </div>
-  </div>
+<div class="md:fixed md:right-0 md:top-14 md:bottom-0 md:w-[400px] md:bg-white">
+  <div class="container mx-auto px-4 py-8 md:h-full md:max-h-[75px] md:px-6" data-game-id="<%= @game.id %>">
+    <div class="flex flex-col h-full space-y-8">
+      <!-- Challenger -->
+      <div class="flex items-center justify-between shrink-0">
+        <div class="flex items-center space-x-3">
+          <div class="relative">
+            <div class="w-2 h-2 rounded-full absolute -left-3 top-1/2 transform -translate-y-1/2
+              <%= GameSession.exists?(game: @game, user: @game.player2, last_seen_at: 30.seconds.ago..Time.current) ? 'bg-green-500' : 'bg-gray-300' %>">
+            </div>
+            <img src="<%= @game.player2&.avatar_url %>" alt="Challenger avatar" class="w-10 h-10 rounded-full">
+          </div>
+          <span class="font-medium">
+            <%= @game.player2&.username || 'Waiting for challenger...' %> - Challenger
+          </span>
+        </div>
 
-  <div class="bg-white shadow rounded-lg p-6">
-    <div class="grid grid-cols-2 gap-8 mb-8">
-      <div>
-        <h2 class="text-lg font-semibold mb-4">Player 1</h2>
-        <div class="flex items-center space-x-4">
-          <img src="<%= @game.player1.avatar_url %>" alt="<%= @game.player1.username %>'s avatar" class="w-12 h-12 rounded-full">
-          <div>
-            <p class="font-medium"><%= @game.player1.username %></p>
-            <% if @game.current_turn == @game.player1 %>
-              <span class="text-green-500 text-sm">Current Turn</span>
+        <!-- Options Menu -->
+        <details class="relative">
+          <summary class="list-none cursor-pointer" data-testid="game-options-menu">
+            <div class="w-8 h-8 flex items-center justify-center rounded hover:bg-gray-100">
+              <div class="w-1 h-1 bg-gray-600 rounded-full shadow-[4px_0_0_0_#4B5563,_-4px_0_0_0_#4B5563]"></div>
+            </div>
+          </summary>
+          <div class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg border border-gray-200 py-1 z-10">
+            <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">View Profile</a>
+            <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Report Player</a>
+            <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Game Settings</a>
+            <% if (@game.player1 == current_user || @game.player2 == current_user) && (@game.waiting? || @game.in_progress?) %>
+              <%= button_to 'Abandon Game', 
+                  abandon_game_path(@game), 
+                  method: :patch,
+                  class: 'w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100',
+                  data: { confirm: 'Are you sure you want to abandon this game?' } %>
             <% end %>
           </div>
-        </div>
+        </details>
       </div>
 
-      <div>
-        <h2 class="text-lg font-semibold mb-4">Player 2</h2>
-        <% if @game.player2 %>
-          <div class="flex items-center space-x-4">
-            <img src="<%= @game.player2.avatar_url %>" alt="<%= @game.player2.username %>'s avatar" class="w-12 h-12 rounded-full">
-            <div>
-              <p class="font-medium"><%= @game.player2.username %></p>
-              <% if @game.current_turn == @game.player2 %>
-                <span class="text-green-500 text-sm">Current Turn</span>
-              <% end %>
-            </div>
+      <!-- Game Board Placeholder -->
+      <div class="flex-grow bg-gray-100 rounded-lg min-h-[100px]"></div>
+
+      <!-- Owner -->
+      <div class="flex items-center space-x-3 shrink-0">
+        <div class="relative">
+          <div class="w-2 h-2 rounded-full absolute -left-3 top-1/2 transform -translate-y-1/2
+            <%= GameSession.exists?(game: @game, user: @game.player1, last_seen_at: 30.seconds.ago..Time.current) ? 'bg-green-500' : 'bg-gray-300' %>">
           </div>
-        <% else %>
-          <p class="text-gray-500">Waiting for player to join...</p>
-        <% end %>
-      </div>
-    </div>
-
-    <div class="mb-8">
-      <div class="flex items-center space-x-4">
-        <h2 class="text-lg font-semibold">Status:</h2>
-        <span class="px-3 py-1 rounded-full text-sm
-          <%= case @game.status
-              when 'waiting'
-                'bg-yellow-100 text-yellow-800'
-              when 'in_progress'
-                'bg-blue-100 text-blue-800'
-              when 'complete'
-                'bg-green-100 text-green-800'
-              else
-                'bg-gray-100 text-gray-800'
-              end %>">
-          <%= @game.status.titleize %>
-        </span>
-      </div>
-    </div>
-
-    <% if @game.complete? && @game.winner %>
-      <div class="mb-8">
-        <h2 class="text-lg font-semibold mb-4">Winner</h2>
-        <div class="flex items-center space-x-4">
-          <img src="<%= @game.winner.avatar_url %>" alt="<%= @game.winner.username %>'s avatar" class="w-12 h-12 rounded-full">
-          <p class="font-medium"><%= @game.winner.username %></p>
+          <img src="<%= @game.player1.avatar_url %>" alt="Owner avatar" class="w-10 h-10 rounded-full">
         </div>
+        <span class="font-medium"><%= @game.player1.username %> - Owner</span>
       </div>
-    <% end %>
 
-    <div class="flex justify-end space-x-4">
-      <% if @game.waiting? && @game.player1 != current_user %>
-        <%= button_to 'Join Game', join_game_path(@game), method: :patch,
-            class: 'bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600' %>
-      <% end %>
+      <!-- Action Buttons -->
+      <div class="flex justify-end space-x-4 shrink-0">
+        <% if @game.waiting? && @game.player1 != current_user %>
+          <%= button_to 'Join Game', 
+              join_game_path(@game), 
+              method: :patch,
+              class: 'bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600' %>
+        <% end %>
 
-      <button type="button" 
-              onclick="sendRandomMove()"
-              <%= 'disabled' unless @game.in_progress? %>
-              class="bg-sky-500 text-white px-4 py-2 rounded hover:bg-sky-600 border">
-        Send Random Move
-      </button>
-
-      <% if (@game.player1 == current_user || @game.player2 == current_user) && (@game.waiting? || @game.in_progress?) %>
-        <%= button_to 'Abandon Game', abandon_game_path(@game), method: :patch,
-            data: { confirm: 'Are you sure you want to abandon this game?' },
-            class: 'bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600' %>
-      <% end %>
+        <button type="button" 
+                onclick="sendRandomMove()"
+                <%= 'disabled' unless @game.in_progress? %>
+                class="bg-sky-500 text-white px-4 py-2 rounded hover:bg-sky-600 border">
+          Send Random Move
+        </button>
+      </div>
     </div>
   </div>
 </div>
@@ -96,8 +74,6 @@
 <%= javascript_tag nonce: true do %>
   function sendRandomMove() {
     const randomArray = Array.from({length: 3}, () => Math.floor(Math.random() * 4));
-    
-    console.log("sendRandomMove", randomArray);
     
     if (window.gameChannel) {
       window.gameChannel.send({

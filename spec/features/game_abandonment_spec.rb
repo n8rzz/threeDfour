@@ -14,16 +14,16 @@ RSpec.describe 'Game Abandonment', type: :system do
     visit game_path(game)
 
     expect(page).to have_content(user.username)
-    expect(page).to have_content('Player 1')
+    expect(page).to have_content("#{user.username} - Owner")
+    
+    find('[data-testid="game-options-menu"]').click
     expect(page).to have_button('Abandon Game')
 
     click_button 'Abandon Game'
 
-    # Should be redirected to my games with success message
     expect(page).to have_current_path(my_games_games_path, wait: 5)
     expect(page).to have_content('Game abandoned.')
 
-    # Verify game state
     game.reload
     expect(game.status).to eq('abandoned')
   end
@@ -33,18 +33,18 @@ RSpec.describe 'Game Abandonment', type: :system do
     visit game_path(game)
 
     expect(page).to have_content(user.username)
-    expect(page).to have_content('Player 1')
+    expect(page).to have_content("#{user.username} - Owner")
     expect(page).to have_content(other_user.username)
-    expect(page).to have_content('Player 2')
+    expect(page).to have_content("#{other_user.username} - Challenger")
+    
+    find('[data-testid="game-options-menu"]').click
     expect(page).to have_button('Abandon Game')
 
     click_button 'Abandon Game'
 
-    # Should be redirected to my games with success message
     expect(page).to have_current_path(my_games_games_path, wait: 5)
     expect(page).to have_content('Game abandoned.')
 
-    # Verify game state
     game.reload
     expect(game.status).to eq('abandoned')
   end
@@ -54,18 +54,18 @@ RSpec.describe 'Game Abandonment', type: :system do
     visit game_path(game)
 
     expect(page).to have_content(other_user.username)
-    expect(page).to have_content('Player 1')
+    expect(page).to have_content("#{other_user.username} - Owner")
     expect(page).to have_content(user.username)
-    expect(page).to have_content('Player 2')
+    expect(page).to have_content("#{user.username} - Challenger")
+    
+    find('[data-testid="game-options-menu"]').click
     expect(page).to have_button('Abandon Game')
 
     click_button 'Abandon Game'
 
-    # Should be redirected to my games with success message
     expect(page).to have_current_path(my_games_games_path, wait: 5)
     expect(page).to have_content('Game abandoned.')
 
-    # Verify game state
     game.reload
     expect(game.status).to eq('abandoned')
   end
@@ -75,7 +75,8 @@ RSpec.describe 'Game Abandonment', type: :system do
     visit game_path(game)
 
     expect(page).to have_content(other_user.username)
-    expect(page).to have_content('Player 1')
+    expect(page).to have_content("#{other_user.username} - Owner")
+    find('[data-testid="game-options-menu"]').click
     expect(page).not_to have_button('Abandon Game')
   end
 end
