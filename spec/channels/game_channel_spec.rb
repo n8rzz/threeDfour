@@ -1,10 +1,15 @@
 require 'rails_helper'
 
 RSpec.describe GameChannel, type: :channel do
+  let(:user) { create(:user) }
+
+  before do
+    stub_connection current_user: user
+  end
+
   describe '#subscribed' do
     context 'with valid game_id' do
       it 'subscribes to the correct stream' do
-        stub_connection
         subscribe(game_id: 1)
         
         expect(subscription).to be_confirmed
@@ -14,11 +19,18 @@ RSpec.describe GameChannel, type: :channel do
 
     context 'with missing game_id' do
       it 'does not subscribe to any stream' do
-        stub_connection
         subscribe(game_id: nil)
         
         expect(subscription).to be_confirmed
         expect(subscription.streams).to be_empty
+      end
+    end
+
+    context 'without authentication' do
+      it 'rejects subscription' do
+        stub_connection current_user: nil
+        subscribe(game_id: 1)
+        expect(subscription).to be_rejected
       end
     end
 
@@ -28,7 +40,6 @@ RSpec.describe GameChannel, type: :channel do
 
   describe '#receive' do
     it 'returns early when game is not found' do
-      stub_connection
       subscribe(game_id: 1)
       
       expect(Game).to receive(:find).with("123").and_return(nil)
@@ -49,7 +60,6 @@ RSpec.describe GameChannel, type: :channel do
 
   describe '#unsubscribed' do
     it 'clears all streams' do
-      stub_connection
       subscribe(game_id: 1)
       
       expect(subscription.streams).not_to be_empty
