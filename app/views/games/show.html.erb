@@ -1,5 +1,7 @@
 <div class="md:fixed md:right-0 md:top-14 md:bottom-0 md:w-[400px] md:bg-white">
-  <div class="container mx-auto px-4 py-8 md:h-full md:max-h-[75px] md:px-6" data-game-id="<%= @game.id %>">
+  <div class="container mx-auto px-4 py-8 md:h-full md:max-h-[75px] md:px-6" 
+       data-game-id="<%= @game.id %>"
+       data-current-user="<%= current_user.id %>">
     <div class="flex flex-col h-full space-y-8">
       <!-- Challenger -->
       <div class="flex items-center justify-between shrink-0">
@@ -10,9 +12,14 @@
             </div>
             <img src="<%= @game.player2&.avatar_url %>" alt="Challenger avatar" class="w-10 h-10 rounded-full">
           </div>
-          <span class="font-medium">
-            <%= @game.player2&.username || 'Waiting for challenger...' %> - Challenger
-          </span>
+          <div class="flex items-center space-x-2" data-player-id="<%= @game.player2&.id %>">
+            <span class="font-medium">
+              <%= @game.player2&.username || 'Waiting for challenger...' %> - Challenger
+            </span>
+            <% if @game.current_turn == @game.player2 %>
+              <span class="inline-flex items-center rounded-md bg-blue-50 px-2 py-1 text-xs font-medium text-blue-700 ring-1 ring-inset ring-blue-700/10">Current Turn</span>
+            <% end %>
+          </div>
         </div>
 
         <!-- Options Menu -->
@@ -48,7 +55,12 @@
           </div>
           <img src="<%= @game.player1.avatar_url %>" alt="Owner avatar" class="w-10 h-10 rounded-full">
         </div>
-        <span class="font-medium"><%= @game.player1.username %> - Owner</span>
+        <div class="flex items-center space-x-2" data-player-id="<%= @game.player1.id %>">
+          <span class="font-medium"><%= @game.player1.username %> - Owner</span>
+          <% if @game.current_turn == @game.player1 %>
+            <span class="inline-flex items-center rounded-md bg-blue-50 px-2 py-1 text-xs font-medium text-blue-700 ring-1 ring-inset ring-blue-700/10">Current Turn</span>
+          <% end %>
+        </div>
       </div>
 
       <!-- Action Buttons -->
@@ -62,8 +74,8 @@
 
         <button type="button" 
                 onclick="sendRandomMove()"
-                <%= 'disabled' unless @game.in_progress? %>
-                class="bg-sky-500 text-white px-4 py-2 rounded hover:bg-sky-600 border">
+                <%= 'disabled' unless @game.in_progress? && @game.current_turn == current_user %>
+                class="bg-sky-500 text-white px-4 py-2 rounded hover:bg-sky-600 border disabled:opacity-50 disabled:cursor-not-allowed">
           Send Random Move
         </button>
       </div>
@@ -78,7 +90,6 @@
     if (window.gameChannel) {
       window.gameChannel.send({
         game_id: <%= @game.id %>,
-        user_id: <%= current_user.id %>,
         move: randomArray
       });
       

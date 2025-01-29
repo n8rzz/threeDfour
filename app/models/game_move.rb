@@ -11,6 +11,8 @@ class GameMove < ApplicationRecord
   validate :game_must_be_in_progress
   validate :user_must_be_current_turn
 
+  after_save :toggle_current_turn, if: :is_valid?
+
   private
 
   def user_must_be_game_participant
@@ -35,5 +37,10 @@ class GameMove < ApplicationRecord
     unless game.current_turn_id == user_id
       errors.add(:user, "must be the current turn player")
     end
+  end
+
+  def toggle_current_turn
+    next_player = (game.current_turn == game.player1) ? game.player2 : game.player1
+    game.update!(current_turn: next_player)
   end
 end 

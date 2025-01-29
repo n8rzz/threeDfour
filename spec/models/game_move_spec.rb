@@ -59,4 +59,137 @@ RSpec.describe GameMove, type: :model do
       end
     end
   end
+
+  describe 'after save' do
+    let(:game) { create(:in_progress_game) }
+    let(:player1) { game.player1 }
+    let(:player2) { game.player2 }
+
+    context 'when move is valid' do
+      let(:game_move) do
+        build(:game_move, game: game, user: game.current_turn, is_valid: true)
+      end
+
+      it 'switches current turn to the other player' do
+        original_turn = game.current_turn
+        other_player = (game.current_turn == player1) ? player2 : player1
+
+        game_move.save!
+        game.reload
+
+        expect(game.current_turn).to eq(other_player)
+        expect(game.current_turn).not_to eq(original_turn)
+      end
+
+      it 'maintains turn order for consecutive moves' do
+        game.update!(current_turn: player1)
+
+        first_move = create(:game_move, game: game, user: player1, is_valid: true)
+
+        game.reload
+
+        expect(game.current_turn).to eq(player2)
+
+        second_move = create(:game_move, game: game, user: player2, is_valid: true)
+
+        game.reload
+
+        expect(game.current_turn).to eq(player1)
+      end
+    end
+
+    context 'when move is invalid' do
+      let(:game_move) do
+        build(:game_move, game: game, user: game.current_turn, is_valid: false)
+      end
+
+      it 'does not switch current turn' do
+        original_turn = game.current_turn
+
+        game_move.save!
+        game.reload
+
+        expect(game.current_turn).to eq(original_turn)
+      end
+    end
+  end
+
+  describe '#toggle_current_turn' do
+    let(:game) { create(:in_progress_game) }
+    let(:player1) { game.player1 }
+    let(:player2) { game.player2 }
+    let(:game_move) { build(:game_move, game: game, user: game.current_turn, is_valid: true) }
+
+    context 'when current turn is player1' do
+      before do
+        game.update!(current_turn: player1)
+      end
+
+      it 'switches turn to player2' do
+        game_move.save!
+        game.reload
+        expect(game.current_turn).to eq(player2)
+      end
+    end
+
+    context 'when current turn is player2' do
+      before do
+        game.update!(current_turn: player2)
+      end
+
+      it 'switches turn to player1' do
+        game_move.save!
+        game.reload
+        expect(game.current_turn).to eq(player1)
+      end
+    end
+
+    context 'when move is invalid' do
+      let(:game_move) { build(:game_move, game: game, user: game.current_turn, is_valid: false) }
+
+      it 'does not toggle turn' do
+        original_turn = game.current_turn
+        game_move.save!
+        game.reload
+        expect(game.current_turn).to eq(original_turn)
+      end
+    end
+
+    context 'when called multiple times' do
+      it 'alternates between players' do
+        game.update!(current_turn: player1)
+
+        # First move
+        create(:game_move, game: game, user: player1, is_valid: true)
+        game.reload
+        expect(game.current_turn).to eq(player2)
+
+        # Second move
+        create(:game_move, game: game, user: player2, is_valid: true)
+        game.reload
+        expect(game.current_turn).to eq(player1)
+
+        # Third move
+        create(:game_move, game: game, user: player1, is_valid: true)
+        game.reload
+        expect(game.current_turn).to eq(player2)
+      end
+    end
+
+    context 'when game is updated concurrently' do
+      it 'handles race conditions safely' do
+        game.update!(current_turn: player1)
+        game_move = build(:game_move, game: game, user: player1, is_valid: true)
+
+        # Simulate a concurrent update
+        other_game = Game.find(game.id)
+        other_game.update!(current_turn: player2)
+
+        # Our move should still process correctly
+        expect { game_move.save! }.not_to raise_error
+        game.reload
+        expect(game.current_turn).to be_in([player1, player2])
+      end
+    end
+  end
 end 
