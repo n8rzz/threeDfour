@@ -35,16 +35,23 @@ class GameChannel < ApplicationCable::Channel
   end
 
   def receive(data)
-    game = Game.find(data["game_id"])
-    return unless game
+    begin
+      game = Game.find(data["game_id"])
+    rescue ActiveRecord::RecordNotFound
+      return
+    end
 
     # Update last_seen_at but don't block move processing if it fails
-    #  TODO: should we proceed here when/if a game session is not found?
     @game_session&.update(last_seen_at: Time.current)
 
     move_data = data["move"]
+    
+    # Early return for invalid array format
+    if move_data.is_a?(Array) && move_data.length != 3
+      broadcast_error(game, ["Invalid move format"])
+      return
+    end
 
-    # Convert array format to hash format if needed
     move = if move_data.is_a?(Array)
       {
         "level" => move_data[0],
@@ -52,11 +59,30 @@ class GameChannel < ApplicationCable::Channel
         "row" => move_data[2]
       }
     else
-      move_data
+      move_data.is_a?(Hash) ? move_data : {}
     end
+
+    # Check for missing required fields
+    missing_fields = []
+    missing_fields << "level" unless move["level"].present?
+    missing_fields << "column" unless move["column"].present?
+    missing_fields << "row" unless move["row"].present?
+
+    # Ensure we have values (even invalid ones) to satisfy DB constraints
+    move = {
+      "level" => 0,
+      "column" => 0,
+      "row" => 0
+    }.merge(move.transform_keys(&:to_s))
 
     game_move = build_game_move(game, move)
     game_move.is_valid = false
+
+    if missing_fields.any?
+      game_move.save(validate: false)
+      broadcast_error(game, missing_fields.map { |field| "#{field.capitalize} must be greater than or equal to 0" })
+      return
+    end
 
     unless game_move.valid?
       game_move.save(validate: false)

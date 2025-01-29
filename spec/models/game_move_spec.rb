@@ -16,6 +16,66 @@ RSpec.describe GameMove, type: :model do
     it { should validate_numericality_of(:level).only_integer.is_greater_than_or_equal_to(0).is_less_than(4) }
     it { should validate_numericality_of(:column).only_integer.is_greater_than_or_equal_to(0).is_less_than(4) }
     it { should validate_numericality_of(:row).only_integer.is_greater_than_or_equal_to(0).is_less_than(4) }
+
+    context 'with boundary values' do
+      let(:game) { create(:in_progress_game) }
+      let(:user) { game.current_turn }
+
+      before do
+        game.update!(current_turn: user)
+      end
+
+      it 'is invalid with negative values' do
+        game_move = build(:game_move, game: game, user: user,
+                         level: -1, column: -1, row: -1)
+        expect(game_move).to be_invalid
+        expect(game_move.errors[:level]).to include("must be greater than or equal to 0")
+        expect(game_move.errors[:column]).to include("must be greater than or equal to 0")
+        expect(game_move.errors[:row]).to include("must be greater than or equal to 0")
+      end
+
+      it 'is invalid with values > 3' do
+        game_move = build(:game_move, game: game, user: user,
+                         level: 4, column: 4, row: 4)
+        expect(game_move).to be_invalid
+        expect(game_move.errors[:level]).to include("must be less than 4")
+        expect(game_move.errors[:column]).to include("must be less than 4")
+        expect(game_move.errors[:row]).to include("must be less than 4")
+      end
+
+      it 'is valid with values = 0' do
+        game_move = build(:game_move, game: game, user: user,
+                         level: 0, column: 0, row: 0)
+        expect(game_move).to be_valid
+      end
+
+      it 'is valid with values = 3' do
+        game_move = build(:game_move, game: game, user: user,
+                         level: 3, column: 3, row: 3)
+        expect(game_move).to be_valid
+      end
+    end
+
+    context 'when move overlaps with existing move' do
+      let(:game) { create(:in_progress_game) }
+      let(:user) { game.current_turn }
+      let!(:existing_move) do
+        create(:game_move, game: game, user: user,
+               level: 1, column: 1, row: 1, is_valid: true)
+      end
+
+      before do
+        game.update!(current_turn: game.player2)
+      end
+
+      it 'is invalid when position is already taken' do
+        skip "Implement overlap validation in the future"
+        new_move = build(:game_move, game: game, user: game.current_turn,
+                        level: 1, column: 1, row: 1)
+        expect(new_move).to be_invalid
+        expect(new_move.errors[:base]).to include("Position is already taken")
+      end
+    end
   end
 
   describe 'custom validations' do
