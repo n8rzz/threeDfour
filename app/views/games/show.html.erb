@@ -17,7 +17,8 @@
               <%= @game.player2&.username || 'Waiting for challenger...' %> - Challenger
             </span>
             <% if @game.current_turn == @game.player2 %>
-              <span class="inline-flex items-center rounded-md bg-blue-50 px-2 py-1 text-xs font-medium text-blue-700 ring-1 ring-inset ring-blue-700/10">Current Turn</span>
+              <span class="inline-flex items-center rounded-md bg-blue-50 px-2 py-1 text-xs font-medium text-blue-700 ring-1 ring-inset ring-blue-700/10"
+                    data-turn-indicator>Current Turn</span>
             <% end %>
           </div>
         </div>
@@ -58,7 +59,8 @@
         <div class="flex items-center space-x-2" data-player-id="<%= @game.player1.id %>">
           <span class="font-medium"><%= @game.player1.username %> - Owner</span>
           <% if @game.current_turn == @game.player1 %>
-            <span class="inline-flex items-center rounded-md bg-blue-50 px-2 py-1 text-xs font-medium text-blue-700 ring-1 ring-inset ring-blue-700/10">Current Turn</span>
+            <span class="inline-flex items-center rounded-md bg-blue-50 px-2 py-1 text-xs font-medium text-blue-700 ring-1 ring-inset ring-blue-700/10"
+                  data-turn-indicator>Current Turn</span>
           <% end %>
         </div>
       </div>
@@ -73,7 +75,7 @@
         <% end %>
 
         <button type="button" 
-                onclick="sendRandomMove()"
+                data-action="send-random-move"
                 <%= 'disabled' unless @game.in_progress? && @game.current_turn == current_user %>
                 class="bg-sky-500 text-white px-4 py-2 rounded hover:bg-sky-600 border disabled:opacity-50 disabled:cursor-not-allowed">
           Send Random Move
@@ -92,8 +94,6 @@
         game_id: <%= @game.id %>,
         move: randomArray
       });
-      
-      console.log('Sent random move:', randomArray);
     }
   }
 <% end %>

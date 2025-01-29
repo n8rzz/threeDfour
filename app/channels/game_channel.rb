@@ -1,4 +1,13 @@
 class GameChannel < ApplicationCable::Channel
+  MESSAGE_TYPE = {
+    move: "move"
+  }.freeze
+
+  MESSAGE_STATUS = {
+    success: "success",
+    error: "error"
+  }.freeze
+
   def subscribed
     @game_id = params[:game_id]
 
@@ -26,17 +35,14 @@ class GameChannel < ApplicationCable::Channel
   end
 
   def receive(data)
-    Rails.logger.info "GameChannel#receive: Received data: #{data.inspect}"
-    
     game = Game.find(data["game_id"])
     return unless game
 
-    if @game_session
-      @game_session.update(last_seen_at: Time.current)
-    end
+    # Update last_seen_at but don't block move processing if it fails
+    #  TODO: should we proceed here when/if a game session is not found?
+    @game_session&.update(last_seen_at: Time.current)
 
     move_data = data["move"]
-    Rails.logger.info "GameChannel#receive: Processing move: #{move_data.inspect}"
 
     # Convert array format to hash format if needed
     move = if move_data.is_a?(Array)
@@ -49,57 +55,56 @@ class GameChannel < ApplicationCable::Channel
       move_data
     end
 
-    game_move = GameMove.new(
-      game: game,
-      user: current_user,
-      level: move["level"],
-      column: move["column"],
-      row: move["row"]
-    )
+    game_move = build_game_move(game, move)
+    game_move.is_valid = false
 
-    Rails.logger.info "GameChannel#receive: Created GameMove: #{game_move.inspect}"
-    Rails.logger.info "GameChannel#receive: GameMove valid? #{game_move.valid?}"
-    Rails.logger.info "GameChannel#receive: GameMove errors: #{game_move.errors.full_messages}" unless game_move.valid?
-
-    if game_move.valid?
-      game_move.is_valid = true # Later this will be replaced with actual move validation
-      game_move.save!
-      Rails.logger.info "GameChannel#receive: Broadcasting success"
-      broadcast_success(game_move)
-    else
-      game_move.is_valid = false
+    unless game_move.valid?
       game_move.save(validate: false)
-      Rails.logger.info "GameChannel#receive: Broadcasting error"
-      broadcast_error(game, game_move.errors.full_messages) # Send all error messages
+      broadcast_error(game, game_move.errors.full_messages)
+      return
     end
+
+    game_move.is_valid = true
+    game_move.save!
+    broadcast_success(game_move)
   end
 
   private
 
   def broadcast_success(game_move)
     message = {
-      type: "move",
-      status: "success",
+      type: MESSAGE_TYPE[:move],
+      status: MESSAGE_STATUS[:success],
       move: {
         level: game_move.level,
         column: game_move.column,
         row: game_move.row,
         user_id: game_move.user_id
       },
+      # Used for updating turn indicators and enabling/disabling move buttons
       current_turn_id: game_move.game.current_turn_id
     }
     
-    Rails.logger.info "GameChannel#broadcast_success: Broadcasting: #{message.inspect}"
     ActionCable.server.broadcast("game_#{game_move.game_id}", message)
   end
 
   def broadcast_error(game, errors)
     message = {
-      type: "move",
-      status: "error",
+      type: MESSAGE_TYPE[:move],
+      status: MESSAGE_STATUS[:error],
       errors: errors
     }
-    Rails.logger.info "GameChannel#broadcast_error: Broadcasting: #{message.inspect}"
+
     ActionCable.server.broadcast("game_#{game.id}", message)
+  end
+
+  def build_game_move(game, move)
+    GameMove.new(
+      game: game,
+      user: current_user,
+      level: move["level"],
+      column: move["column"],
+      row: move["row"]
+    )
   end
 end

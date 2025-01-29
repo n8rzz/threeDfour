@@ -1,7 +1,95 @@
 import consumer from "channels/consumer";
 
+const MESSAGE_TYPE = {
+  MOVE: "move",
+};
+const MESSAGE_STATUS = {
+  ERROR: "error",
+  SUCCESS: "success",
+};
+const GAME_SELECTORS = {
+  CURRENT_USER: "[data-current-user]",
+  GAME_CONTAINER: "[data-game-id]",
+  MOVE_BUTTON: '[data-action="send-random-move"]',
+  PLAYER_ELEMENTS: "[data-player-id]",
+  TURN_INDICATOR: "[data-turn-indicator]",
+};
+
+function _updateTurnIndicator(playerId, isCurrentTurn) {
+  const playerDiv = document.querySelector(`[data-player-id="${playerId}"]`);
+
+  if (!playerDiv) {
+    return;
+  }
+
+  const turnIndicator = playerDiv.querySelector(GAME_SELECTORS.TURN_INDICATOR);
+
+  if (isCurrentTurn && !turnIndicator) {
+    const indicator = document.createElement("span");
+
+    indicator.className =
+      "inline-flex items-center rounded-md bg-blue-50 px-2 py-1 text-xs font-medium text-blue-700 ring-1 ring-inset ring-blue-700/10";
+    indicator.textContent = "Current Turn";
+    indicator.dataset.turnIndicator = "";
+
+    playerDiv.appendChild(indicator);
+
+    return;
+  }
+
+  if (!isCurrentTurn && turnIndicator) {
+    turnIndicator.remove();
+  }
+}
+
+function _updateMoveButton(currentTurnId) {
+  const moveButton = document.querySelector(GAME_SELECTORS.MOVE_BUTTON);
+
+  if (!moveButton) {
+    return;
+  }
+
+  const currentUserId = parseInt(
+    document.querySelector(GAME_SELECTORS.CURRENT_USER)?.dataset.currentUser
+  );
+
+  if (!currentUserId) {
+    return;
+  }
+
+  moveButton.disabled = currentUserId !== currentTurnId;
+}
+
+function _handleSuccessfulMove(data) {
+  document
+    .querySelectorAll(GAME_SELECTORS.PLAYER_ELEMENTS)
+    .forEach((playerDiv) => {
+      const playerId = parseInt(playerDiv.dataset.playerId);
+
+      _updateTurnIndicator(playerId, playerId === data.current_turn_id);
+    });
+
+  _updateMoveButton(data.current_turn_id);
+}
+
+function _onGameChannelReceived(data) {
+  if (data.type !== MESSAGE_TYPE.MOVE) {
+    return;
+  }
+
+  if (data.status === MESSAGE_STATUS.ERROR) {
+    alert("!!! Invalid move: " + data.errors.join(", "));
+
+    return;
+  }
+
+  if (data.status === MESSAGE_STATUS.SUCCESS) {
+    _handleSuccessfulMove(data);
+  }
+}
+
 function connectToGameChannel() {
-  const gameContainer = document.querySelector("[data-game-id]");
+  const gameContainer = document.querySelector(GAME_SELECTORS.GAME_CONTAINER);
 
   if (!gameContainer) {
     return;
@@ -9,8 +97,7 @@ function connectToGameChannel() {
 
   const gameId = gameContainer.dataset.gameId;
 
-  // Return early if we're already subscribed to this game
-  if (window.gameChannel && window.gameChannel.gameId === gameId) {
+  if (window.gameChannel?.gameId === gameId) {
     return;
   }
 
@@ -22,63 +109,45 @@ function connectToGameChannel() {
     { channel: "GameChannel", game_id: gameId },
     {
       connected() {
-        console.log("Connected to game channel", gameId);
-        this.gameId = gameId; // Store the gameId on the channel object
+        this.gameId = gameId;
       },
 
-      disconnected() {
-        console.log("Disconnected from game channel");
-      },
+      disconnected() {},
 
       received(data) {
-        console.log("Received game channel data:", data);
+        console.log("--- Received data:", data);
 
-        if (data.type === "move") {
-          if (data.status === "success") {
-            console.log("Move successful:", data.move);
-
-            // Update turn indicators
-            document
-              .querySelectorAll("[data-player-id]")
-              .forEach((playerDiv) => {
-                const playerId = parseInt(playerDiv.dataset.playerId);
-                const turnIndicator = playerDiv.querySelector(".bg-blue-50");
-
-                if (playerId === data.current_turn_id) {
-                  if (!turnIndicator) {
-                    const indicator = document.createElement("span");
-                    indicator.className =
-                      "inline-flex items-center rounded-md bg-blue-50 px-2 py-1 text-xs font-medium text-blue-700 ring-1 ring-inset ring-blue-700/10";
-                    indicator.textContent = "Current Turn";
-                    playerDiv.appendChild(indicator);
-                  }
-                } else if (turnIndicator) {
-                  turnIndicator.remove();
-                }
-              });
-
-            // Update the Send Random Move button state
-            const moveButton = document.querySelector(
-              'button[onclick="sendRandomMove()"]'
-            );
-            if (moveButton) {
-              const currentUserId = parseInt(
-                document.querySelector("[data-current-user]")?.dataset
-                  .currentUser
-              );
-              moveButton.disabled = currentUserId !== data.current_turn_id;
-            }
-
-            // TODO: Update game board visualization
-          } else if (data.status === "error") {
-            console.error("Move error:", data.errors);
-            alert("Invalid move: " + data.errors.join(", "));
-          }
-        }
+        _onGameChannelReceived(data);
       },
     }
   );
 }
+
+document.addEventListener("click", (event) => {
+  const moveButton = event.target.closest(GAME_SELECTORS.MOVE_BUTTON);
+
+  if (!moveButton) {
+    return;
+  }
+
+  if (!window.gameChannel) {
+    console.warn("No game channel found");
+  }
+
+  const randomGameMove = Array.from({ length: 3 }, () =>
+    Math.floor(Math.random() * 4)
+  );
+
+  const payload = {
+    game_id: document.querySelector(GAME_SELECTORS.GAME_CONTAINER).dataset
+      .gameId,
+    move: randomGameMove,
+  };
+
+  console.log("+++ Sending move:", payload);
+
+  window.gameChannel.send(payload);
+});
 
 // Connect when the page loads
 document.addEventListener("turbo:load", connectToGameChannel);
