@@ -2,6 +2,7 @@ import consumer from "channels/consumer";
 
 const MESSAGE_TYPE = {
   MOVE: "move",
+  PLAYER_STATUS: "player_status",
 };
 const MESSAGE_STATUS = {
   ERROR: "error",
@@ -13,6 +14,7 @@ const GAME_SELECTORS = {
   MOVE_BUTTON: '[data-action="send-random-move"]',
   PLAYER_ELEMENTS: "[data-player-id]",
   TURN_INDICATOR: "[data-turn-indicator]",
+  STATUS_INDICATOR: "[data-status-indicator]",
 };
 
 function _updateTurnIndicator(playerId, isCurrentTurn) {
@@ -60,6 +62,24 @@ function _updateMoveButton(currentTurnId) {
   moveButton.disabled = currentUserId !== currentTurnId;
 }
 
+function _updatePlayerStatus(playerId, isConnected) {
+  const statusIndicator = document.querySelector(
+    `${GAME_SELECTORS.STATUS_INDICATOR}[data-player-id="${playerId}"]`
+  );
+
+  if (!statusIndicator) {
+    return;
+  }
+
+  if (isConnected) {
+    statusIndicator.classList.remove("bg-gray-300");
+    statusIndicator.classList.add("bg-green-500");
+  } else {
+    statusIndicator.classList.remove("bg-green-500");
+    statusIndicator.classList.add("bg-gray-300");
+  }
+}
+
 function _handleSuccessfulMove(data) {
   document
     .querySelectorAll(GAME_SELECTORS.PLAYER_ELEMENTS)
@@ -73,18 +93,23 @@ function _handleSuccessfulMove(data) {
 }
 
 function _onGameChannelReceived(data) {
-  if (data.type !== MESSAGE_TYPE.MOVE) {
+  if (data.type === MESSAGE_TYPE.MOVE) {
+    if (data.status === MESSAGE_STATUS.ERROR) {
+      alert("!!! Invalid move: " + data.errors.join(", "));
+      return;
+    }
+
+    if (data.status === MESSAGE_STATUS.SUCCESS) {
+      _handleSuccessfulMove(data);
+    }
     return;
   }
 
-  if (data.status === MESSAGE_STATUS.ERROR) {
-    alert("!!! Invalid move: " + data.errors.join(", "));
-
-    return;
-  }
-
-  if (data.status === MESSAGE_STATUS.SUCCESS) {
-    _handleSuccessfulMove(data);
+  if (
+    data.type === MESSAGE_TYPE.PLAYER_STATUS &&
+    data.status === MESSAGE_STATUS.SUCCESS
+  ) {
+    _updatePlayerStatus(data.user_id, data.connected);
   }
 }
 

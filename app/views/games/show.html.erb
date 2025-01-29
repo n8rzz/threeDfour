@@ -8,7 +8,10 @@
         <div class="flex items-center space-x-3">
           <div class="relative">
             <div class="w-2 h-2 rounded-full absolute -left-3 top-1/2 transform -translate-y-1/2
-              <%= GameSession.exists?(game: @game, user: @game.player2, last_seen_at: 30.seconds.ago..Time.current) ? 'bg-green-500' : 'bg-gray-300' %>">
+              <%= GameSession.exists?(game: @game, user: @game.player2, last_seen_at: 30.seconds.ago..Time.current) ? 'bg-green-500' : 'bg-gray-300' %>"
+              data-status-indicator
+              data-player-role="challenger"
+              data-player-id="<%= @game.player2&.id %>">
             </div>
             <img src="<%= @game.player2&.avatar_url %>" alt="Challenger avatar" class="w-10 h-10 rounded-full">
           </div>
@@ -52,7 +55,10 @@
       <div class="flex items-center space-x-3 shrink-0">
         <div class="relative">
           <div class="w-2 h-2 rounded-full absolute -left-3 top-1/2 transform -translate-y-1/2
-            <%= GameSession.exists?(game: @game, user: @game.player1, last_seen_at: 30.seconds.ago..Time.current) ? 'bg-green-500' : 'bg-gray-300' %>">
+            <%= GameSession.exists?(game: @game, user: @game.player1, last_seen_at: 30.seconds.ago..Time.current) ? 'bg-green-500' : 'bg-gray-300' %>"
+            data-status-indicator
+            data-player-role="owner"
+            data-player-id="<%= @game.player1.id %>">
           </div>
           <img src="<%= @game.player1.avatar_url %>" alt="Owner avatar" class="w-10 h-10 rounded-full">
         </div>

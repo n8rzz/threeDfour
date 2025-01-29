@@ -12,10 +12,24 @@ RSpec.describe GameChannel, type: :channel do
   describe '#subscribed' do
     context 'with valid game_id' do
       it 'subscribes to the correct stream' do
-        subscribe(game_id: 1)
+        subscribe(game_id: game.id)
 
         expect(subscription).to be_confirmed
-        expect(subscription).to have_stream_from("game_1")
+        expect(subscription).to have_stream_from("game_#{game.id}")
+      end
+
+      it 'broadcasts player connected status' do
+        expect {
+          subscribe(game_id: game.id)
+        }.to have_broadcasted_to("game_#{game.id}")
+          .with(
+            hash_including(
+              type: "player_status",
+              status: "success",
+              user_id: user.id,
+              connected: true
+            )
+          )
       end
     end
 
@@ -378,11 +392,27 @@ RSpec.describe GameChannel, type: :channel do
 
   describe '#unsubscribed' do
     it 'clears all streams' do
-      subscribe(game_id: 1)
+      subscribe(game_id: game.id)
 
       expect(subscription.streams).not_to be_empty
       subscription.unsubscribe_from_channel
       expect(subscription.streams).to be_empty
+    end
+
+    it 'broadcasts player disconnected status' do
+      subscribe(game_id: game.id)
+      
+      expect {
+        subscription.unsubscribe_from_channel
+      }.to have_broadcasted_to("game_#{game.id}")
+        .with(
+          hash_including(
+            type: "player_status",
+            status: "success",
+            user_id: user.id,
+            connected: false
+          )
+        )
     end
   end
 end

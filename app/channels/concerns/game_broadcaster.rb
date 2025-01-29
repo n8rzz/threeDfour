@@ -3,7 +3,8 @@ module GameBroadcaster
 
   # Message types for game-related broadcasts
   MESSAGE_TYPE = {
-    move: "move"
+    move: "move",
+    player_status: "player_status"
   }.freeze
 
   # Status types for game-related broadcasts
@@ -47,6 +48,21 @@ module GameBroadcaster
       errors: errors
     }
 
+    ActionCable.server.broadcast("game_#{game.id}", message)
+  end
+
+  # Broadcasts a player's status change to all players in the game
+  # @param game [Game] The game the player is in
+  # @param user [User] The user whose status changed
+  # @param connected [Boolean] Whether the user connected or disconnected
+  def broadcast_player_status(game, user, connected)
+    message = {
+      type: MESSAGE_TYPE[:player_status],
+      status: MESSAGE_STATUS[:success],
+      user_id: user.id,
+      connected: connected
+    }
+    
     ActionCable.server.broadcast("game_#{game.id}", message)
   end
 end 

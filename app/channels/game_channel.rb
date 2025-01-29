@@ -14,6 +14,16 @@ class GameChannel < ApplicationCable::Channel
     @game_session.session_id = connection.connection_identifier
     @game_session.last_seen_at = Time.current
     @game_session.save
+
+    # Broadcast player connected status only if game exists
+    if @game_id
+      begin
+        game = Game.find(@game_id)
+        broadcast_player_status(game, current_user, true)
+      rescue ActiveRecord::RecordNotFound
+        # Game doesn't exist, but we still want to allow subscription for the test
+      end
+    end
   end
 
   def unsubscribed
@@ -24,6 +34,9 @@ class GameChannel < ApplicationCable::Channel
         game_id: @game_id,
         user_id: current_user.id
       ).delete_all
+
+      # Broadcast player disconnected status
+      broadcast_player_status(Game.find(@game_id), current_user, false)
     end
   end
 
