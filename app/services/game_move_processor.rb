@@ -33,7 +33,12 @@ class GameMoveProcessor
     end
 
     game_move.is_valid = true
-    game_move.save!
+    
+    ActiveRecord::Base.transaction do
+      game_move.save!
+      update_board_state(game_move)
+    end
+
     success_result(game_move)
   end
 
@@ -81,6 +86,12 @@ class GameMoveProcessor
       column: move["column"],
       row: move["row"]
     )
+  end
+
+  def update_board_state(game_move)
+    player_number = @game.player1 == @current_user ? 1 : 2
+    @game.board_state[game_move.level][game_move.row][game_move.column] = player_number
+    @game.save!
   end
 
   def success_result(game_move)

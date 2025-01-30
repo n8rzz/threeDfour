@@ -65,15 +65,34 @@ RSpec.describe GameMove, type: :model do
       end
 
       before do
+        game.board_state[1][1][1] = 1
+        game.save!
         game.update!(current_turn: game.player2)
       end
 
       it 'is invalid when position is already taken' do
-        skip "Implement overlap validation in the future"
         new_move = build(:game_move, game: game, user: game.current_turn,
                         level: 1, column: 1, row: 1)
-        expect(new_move).to be_invalid
+        
+                        expect(new_move).to be_invalid
         expect(new_move.errors[:base]).to include("Position is already taken")
+      end
+
+      it 'is valid when position is empty' do
+        new_move = build(:game_move, game: game, user: game.current_turn,
+                        level: 0, column: 0, row: 0)
+        
+                        expect(new_move).to be_valid
+      end
+
+      it 'updates board state when move is valid' do
+        move_data = [0, 0, 0]
+        result = GameMoveProcessor.new(game, game.current_turn).process(move_data)
+        
+        expect(result[:success]).to be true
+        
+        game.reload
+        expect(game.board_state[0][0][0]).to eq(2)
       end
     end
   end

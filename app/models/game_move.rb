@@ -10,6 +10,7 @@ class GameMove < ApplicationRecord
   validate :user_must_be_game_participant
   validate :game_must_be_in_progress
   validate :user_must_be_current_turn
+  validate :position_must_be_available
 
   after_save :toggle_current_turn, if: :is_valid?
 
@@ -37,6 +38,16 @@ class GameMove < ApplicationRecord
     
     unless game.current_turn_id == user_id
       errors.add(:user, "must be the current turn player")
+    end
+  end
+
+  def position_must_be_available
+    return if game.nil?
+    return if level.nil? || row.nil? || column.nil?
+    return unless level.between?(0, 3) && row.between?(0, 3) && column.between?(0, 3)
+
+    if game.board_state[level][row][column] != -1
+      errors.add(:base, "Position is already taken")
     end
   end
 
