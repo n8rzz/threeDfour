@@ -8,6 +8,52 @@ RSpec.describe Game, type: :model do
     it { should belong_to(:winner).class_name('User').optional }
   end
 
+  describe 'board state' do
+    let(:game) { create(:game) }
+
+    it 'initializes with default board state' do
+      expect(game.board_state).to be_an(Array)
+      expect(game.board_state.size).to eq(4)
+      expect(game.board_state.all? { |level| level.size == 4 }).to be true
+      expect(game.board_state.all? { |level| level.all? { |row| row.size == 4 } }).to be true
+      expect(game.board_state.all? { |level| level.all? { |row| row.all? { |cell| cell == -1 } } }).to be true
+    end
+
+    it 'creates a deep copy of the default board state' do
+      game.board_state[0][0][0] = 1
+      new_game = create(:game)
+
+      expect(new_game.board_state[0][0][0]).to eq(-1)
+    end
+  end
+
+  describe '#place_move' do
+    let(:game) { create(:game) }
+
+    it 'places valid moves' do
+      expect(game.place_move(0, 0, 0, 1)).to be true
+      expect(game.board_state[0][0][0]).to eq(1)
+    end
+
+    it 'rejects invalid player numbers' do
+      expect(game.place_move(0, 0, 0, 3)).to be false
+      expect(game.board_state[0][0][0]).to eq(-1)
+    end
+
+    it 'rejects out of bounds moves' do
+      expect(game.place_move(4, 0, 0, 1)).to be false
+      expect(game.place_move(0, 4, 0, 1)).to be false
+      expect(game.place_move(0, 0, 4, 1)).to be false
+    end
+
+    it 'allows moves for both players' do
+      expect(game.place_move(0, 0, 0, 1)).to be true
+      expect(game.place_move(0, 0, 1, 2)).to be true
+      expect(game.board_state[0][0][0]).to eq(1)
+      expect(game.board_state[0][0][1]).to eq(2)
+    end
+  end
+
   describe 'validations' do
     it { should validate_presence_of(:board_state) }
 

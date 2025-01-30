@@ -1,18 +1,19 @@
 FactoryBot.define do
   factory :game do
     association :player1, factory: [ :user, :confirmed ]
-    association :current_turn, factory: [ :user, :confirmed ]
+
+    after(:build) do |game|
+      game.current_turn = game.player1
+    end
 
     trait :waiting do
       status { 'waiting' }
-      after(:build) do |game|
-        game.current_turn = game.player1
-      end
     end
 
     trait :in_progress do
       status { 'in_progress' }
       association :player2, factory: [ :user, :confirmed ]
+
       after(:build) do |game|
         game.current_turn = [ game.player1, game.player2 ].sample
       end
@@ -22,6 +23,7 @@ FactoryBot.define do
       status { 'complete' }
       association :player2, factory: [ :user, :confirmed ]
       association :winner, factory: [ :user, :confirmed ]
+
       after(:build) do |game|
         game.winner = [ game.player1, game.player2 ].sample
       end

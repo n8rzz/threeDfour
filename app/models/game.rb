@@ -1,5 +1,9 @@
 class Game < ApplicationRecord
+  DEFAULT_BOARD_STATE = Array.new(4) { Array.new(4) { Array.new(4, -1) } }.freeze
+
   include AASM
+
+  after_initialize :set_default_board_state, if: :new_record?
 
   belongs_to :player1, class_name: "User"
   belongs_to :player2, class_name: "User", optional: true
@@ -58,7 +62,19 @@ class Game < ApplicationRecord
     end
   end
 
+  def place_move(level, row, column, player_number)
+    return false unless [1, 2].include?(player_number)
+    return false unless [level, row, column].all? { |n| n.between?(0, 3) }
+
+    board_state[level][row][column] = player_number
+    save
+  end
+
   private
+
+  def set_default_board_state
+    self.board_state ||= DEFAULT_BOARD_STATE.deep_dup
+  end
 
   def serialize_move_history
     return true unless game_moves.any?

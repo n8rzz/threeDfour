@@ -11,7 +11,6 @@ waiting = Game.find_or_initialize_by(
 )
 unless waiting.persisted?
   waiting.current_turn = admin
-  waiting.board_state = { state: {} }
   waiting.save!
 end
 
@@ -23,9 +22,6 @@ in_progress = Game.find_or_initialize_by(
 )
 unless in_progress.persisted?
   in_progress.current_turn = user
-  in_progress.board_state = {
-    state: {}
-  }
   in_progress.save!
 end
 
@@ -38,9 +34,6 @@ completed = Game.find_or_initialize_by(
 )
 unless completed.persisted?
   completed.current_turn = user
-  completed.board_state = {
-    state: {}
-  }
   completed.save!
 end
 
@@ -52,7 +45,6 @@ abandoned_waiting = Game.find_or_initialize_by(
 )
 unless abandoned_waiting.persisted?
   abandoned_waiting.current_turn = user
-  abandoned_waiting.board_state = { state: {} }
   abandoned_waiting.save!
 end
 
@@ -64,9 +56,6 @@ abandoned_playing = Game.find_or_initialize_by(
 )
 unless abandoned_playing.persisted?
   abandoned_playing.current_turn = admin
-  abandoned_playing.board_state = {
-    state: {}
-  }
   abandoned_playing.save!
 end
 
