@@ -46,7 +46,7 @@ gem "thruster", require: false
 
 group :development, :test do
   # See https://guides.rubyonrails.org/debugging_rails_applications.html#debugging-with-the-debug-gem
-  gem "debug", platforms: %i[ mri windows ], require: "debug/prelude"
+  gem "debug", platforms: %i[ mri mingw x64_mingw ]
 
   # Static analysis for security vulnerabilities [https://brakemanscanner.org/]
   gem "brakeman", require: false
@@ -59,6 +59,8 @@ group :development, :test do
   gem "capybara"
   gem "selenium-webdriver"
   gem "database_cleaner-active_record"
+  gem "faker"
+  gem "get_process_mem"
 end
 
 group :development do
@@ -70,5 +72,3 @@ group :development do
   gem "guard-rspec"
   gem "guard-bundler"
 end
-
-gem "faker", "~> 3.5"

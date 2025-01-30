@@ -28,6 +28,7 @@ class GameMove < ApplicationRecord
     
     unless game.in_progress?
       errors.add(:game, "must be in progress")
+      throw(:abort)  # Prevent any further processing
     end
   end
 

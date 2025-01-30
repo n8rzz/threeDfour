@@ -32,7 +32,13 @@ class Game < ApplicationRecord
 
     event :complete_game do
       before do
+        self.current_turn = player1
+        
         serialize_move_history
+      end
+
+      after do
+        save!
       end
 
       transitions from: :in_progress, to: :complete
@@ -44,6 +50,10 @@ class Game < ApplicationRecord
         serialize_move_history
       end
 
+      after do
+        save!
+      end
+
       transitions from: [ :waiting, :in_progress ], to: :abandoned
     end
   end
@@ -51,7 +61,7 @@ class Game < ApplicationRecord
   private
 
   def serialize_move_history
-    return unless game_moves.any?
+    return true unless game_moves.any?
 
     self.move_history = game_moves.order(:created_at).map do |move|
       {
@@ -63,6 +73,10 @@ class Game < ApplicationRecord
         is_valid: move.is_valid
       }
     end
+  end
+
+  def finalize_game
+    save!
   end
 
   def validate_game_state

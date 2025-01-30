@@ -36,15 +36,12 @@ rescue ActiveRecord::PendingMigrationError => e
 end
 
 RSpec.configure do |config|
-  # Remove this line if you're not using ActiveRecord or ActiveRecord fixtures
   config.fixture_paths = [
     Rails.root.join('spec/fixtures')
   ]
 
-  # Factory Bot configuration
   config.include FactoryBot::Syntax::Methods
 
-  # Database Cleaner configuration
   config.before(:suite) do
     DatabaseCleaner.clean_with(:truncation)
   end
@@ -65,7 +62,6 @@ RSpec.configure do |config|
     DatabaseCleaner.clean
   end
 
-  # System tests configuration
   config.before(:each, type: :system) do
     driven_by :selenium_chrome_headless
   end
@@ -109,6 +105,18 @@ RSpec.configure do |config|
 
   ActiveSupport.on_load(:action_mailer) do
     Rails.application.reload_routes_unless_loaded
+  end
+
+  # Performance test configuration
+  config.filter_run_excluding performance: true unless ENV['RUN_PERFORMANCE_TESTS']
+  config.filter_run_excluding skip_in_ci: true if ENV['CI']
+
+  config.before(:each, performance: true) do
+    ActiveRecord::Base.logger.level = :info  # Reduce SQL logging noise
+  end
+
+  config.after(:each, performance: true) do
+    ActiveRecord::Base.logger.level = :debug  # Reset logging level
   end
 end
 
