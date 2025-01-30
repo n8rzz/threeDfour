@@ -81,27 +81,31 @@ class Game < ApplicationRecord
 
   def validate_game_state
     return if waiting?
+
     errors.add(:player2, "must be present for in-progress game") if in_progress? && !player2
     errors.add(:player2, "must be present for complete game") if complete? && !player2
   end
 
   def validate_winner
     return unless winner_id
+
     if !player2_id || waiting? || abandoned?
       errors.add(:winner, "can't be set unless game is complete with two players")
     end
   end
 
   def validate_current_turn
-    if in_progress?
-      unless [ player1_id, player2_id ].include?(current_turn_id)
-        errors.add(:current_turn, "must be one of the players")
-      end
-    else
-      unless current_turn_id == player1_id
-        errors.add(:current_turn, "must be player1 when not in progress")
-      end
+    return if current_turn_id.nil?
+
+    if in_progress? && ![ player1_id, player2_id ].include?(current_turn_id)
+      errors.add(:current_turn, "must be one of the players")
+      
+      return
     end
+
+    return if in_progress?
+
+    errors.add(:current_turn, "must be player1 when not in progress") unless current_turn_id == player1_id
   end
 
   def has_player2?

@@ -28,7 +28,7 @@ class GameMove < ApplicationRecord
     
     unless game.in_progress?
       errors.add(:game, "must be in progress")
-      throw(:abort)  # Prevent any further processing
+      throw(:abort)
     end
   end
 
@@ -42,6 +42,7 @@ class GameMove < ApplicationRecord
 
   def toggle_current_turn
     next_player = (game.current_turn == game.player1) ? game.player2 : game.player1
+    
     game.update!(current_turn: next_player)
   end
 end 
