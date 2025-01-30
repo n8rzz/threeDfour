@@ -101,4 +101,88 @@ RSpec.describe Game, type: :model do
       expect(game).to be_complete
     end
   end
+
+  describe 'move history serialization' do
+    let(:player1) { create(:user, :confirmed) }
+    let(:player2) { create(:user, :confirmed) }
+    let(:game) { create(:in_progress_game, player1: player1, player2: player2, current_turn: player1) }
+
+    context 'when game has moves' do
+      before do
+        # Set up moves with explicit timestamps for chronological testing
+        travel_to(1.hour.ago) do
+          create(:game_move, game: game, user: player1, level: 0, column: 1, row: 1, is_valid: true)
+        end
+
+        travel_to(30.minutes.ago) do
+          game.update!(current_turn: player2)
+          create(:game_move, game: game, user: player2, level: 1, column: 2, row: 2, is_valid: true)
+        end
+
+        travel_to(15.minutes.ago) do
+          game.update!(current_turn: player1)
+          create(:game_move, game: game, user: player1, level: 2, column: 0, row: 0, is_valid: false)
+        end
+      end
+
+      context 'when game is completed' do
+        it 'serializes move history in chronological order' do
+          game.complete_game!
+          game.reload
+
+          expect(game.move_history).to be_an(Array)
+          expect(game.move_history.length).to eq(3)
+          
+          first_move = game.move_history[0]
+          expect(first_move['user_id']).to eq(player1.id)
+          expect(first_move['level']).to eq(0)
+          expect(first_move['column']).to eq(1)
+          expect(first_move['row']).to eq(1)
+          expect(first_move['is_valid']).to be true
+          expect(first_move['created_at']).to be_present
+
+          second_move = game.move_history[1]
+          expect(second_move['user_id']).to eq(player2.id)
+          expect(second_move['is_valid']).to be true
+
+          third_move = game.move_history[2]
+          expect(third_move['user_id']).to eq(player1.id)
+          expect(third_move['is_valid']).to be false
+
+          # Verify chronological order
+          move_times = game.move_history.map { |m| Time.parse(m['created_at']) }
+          expect(move_times).to eq(move_times.sort)
+        end
+      end
+
+      context 'when game is abandoned' do
+        it 'serializes move history and sets current turn to player1' do
+          game.abandon!
+          game.reload
+
+          expect(game.move_history).to be_an(Array)
+          expect(game.move_history.length).to eq(3)
+          expect(game.current_turn).to eq(player1)
+        end
+      end
+    end
+
+    context 'when game has no moves' do
+      let(:empty_game) { create(:in_progress_game, player1: player1, player2: player2, current_turn: player1) }
+
+      it 'does not serialize anything when completed' do
+        empty_game.complete_game!
+        empty_game.reload
+
+        expect(empty_game.move_history).to be_nil
+      end
+
+      it 'does not serialize anything when abandoned' do
+        empty_game.abandon!
+        empty_game.reload
+
+        expect(empty_game.move_history).to be_nil
+      end
+    end
+  end
 end

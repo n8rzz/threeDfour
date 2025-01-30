@@ -5,6 +5,7 @@ class Game < ApplicationRecord
   belongs_to :player2, class_name: "User", optional: true
   belongs_to :current_turn, class_name: "User"
   belongs_to :winner, class_name: "User", optional: true
+  has_many :game_moves
 
   validates :board_state, presence: true
   validate :validate_game_state
@@ -30,12 +31,17 @@ class Game < ApplicationRecord
     end
 
     event :complete_game do
+      before do
+        serialize_move_history
+      end
+
       transitions from: :in_progress, to: :complete
     end
 
     event :abandon do
       before do
         self.current_turn = player1
+        serialize_move_history
       end
 
       transitions from: [ :waiting, :in_progress ], to: :abandoned
@@ -43,6 +49,21 @@ class Game < ApplicationRecord
   end
 
   private
+
+  def serialize_move_history
+    return unless game_moves.any?
+
+    self.move_history = game_moves.order(:created_at).map do |move|
+      {
+        user_id: move.user_id,
+        level: move.level,
+        column: move.column,
+        row: move.row,
+        created_at: move.created_at,
+        is_valid: move.is_valid
+      }
+    end
+  end
 
   def validate_game_state
     return if waiting?
