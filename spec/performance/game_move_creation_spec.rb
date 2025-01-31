@@ -6,7 +6,7 @@ RSpec.describe 'Game Move Creation Performance', :performance do
   let(:game) { create(:in_progress_game, player1: player1, player2: player2, current_turn: player1) }
 
   it 'maintains reasonable performance for rapid move creation' do
-    move_counts = [10, 50, 100]
+    move_counts = [ 10, 50, 100 ]
     timings = {}
 
     move_counts.each do |count|
@@ -17,7 +17,7 @@ RSpec.describe 'Game Move Creation Performance', :performance do
         count.times do |i|
           current_player = i.even? ? player1 : player2
           game.update!(current_turn: current_player)
-          
+
           create(:game_move,
             game: game,
             user: current_player,
@@ -48,12 +48,12 @@ RSpec.describe 'Game Move Creation Performance', :performance do
 
   it 'handles concurrent move creation efficiently', :skip_in_ci do
     game.update!(current_turn: player1)
-    
+
     threads = []
     mutex = Mutex.new
     move_count = 20
     memory_before = GetProcessMem.new.mb
-    
+
     time = Benchmark.measure do
       2.times do |t|
         threads << Thread.new do
@@ -90,12 +90,12 @@ RSpec.describe 'Game Move Creation Performance', :performance do
   it 'maintains performance with validation checks' do
     invalid_moves = []
     memory_before = GetProcessMem.new.mb
-    
+
     time = Benchmark.measure do
       20.times do |i|
         current_player = i.even? ? player1 : player2
         game.update!(current_turn: current_player)
-        
+
         create(:game_move,
           game: game,
           user: current_player,
@@ -125,4 +125,4 @@ RSpec.describe 'Game Move Creation Performance', :performance do
     expect(time.real / 40).to be < 0.05 # Less than 50ms per validation
     expect(memory_after - memory_before).to be < 5
   end
-end 
+end

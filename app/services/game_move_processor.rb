@@ -20,7 +20,7 @@ class GameMoveProcessor
 
     if missing_fields.any?
       game_move.save(validate: false)
-      
+
       return error_result(
         missing_fields.map { |field| "#{field.capitalize} must be greater than or equal to 0" },
         game_move
@@ -33,7 +33,7 @@ class GameMoveProcessor
     end
 
     game_move.is_valid = true
-    
+
     ActiveRecord::Base.transaction do
       game_move.save!
       update_board_state(game_move)
@@ -50,7 +50,7 @@ class GameMoveProcessor
   end
 
   def invalid_array_format
-    error_result(["Invalid move format"])
+    error_result([ "Invalid move format" ])
   end
 
   def normalize_move_data(move_data)
@@ -109,4 +109,4 @@ class GameMoveProcessor
       errors: errors
     }
   end
-end 
+end

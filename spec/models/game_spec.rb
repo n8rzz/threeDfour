@@ -89,7 +89,7 @@ RSpec.describe Game, type: :model do
       it 'cannot set winner without player2' do
         game = build(:game, status: 'complete', player1: player1, current_turn: player1)
         game.winner = winner
-        
+
         expect(game).not_to be_valid
         expect(game.errors[:winner]).to include("can't be set unless game is complete with two players")
       end
@@ -101,7 +101,7 @@ RSpec.describe Game, type: :model do
 
       it 'requires current_turn to be player1 when waiting' do
         game = build(:waiting_game, player1: player1)
-        
+
         game.current_turn = other_player
 
         expect(game).not_to be_valid
@@ -110,9 +110,9 @@ RSpec.describe Game, type: :model do
 
       it 'requires current_turn to be one of the players when in progress' do
         game = build(:in_progress_game, player1: player1)
-        
+
         game.current_turn = other_player
-        
+
         expect(game).not_to be_valid
         expect(game.errors[:current_turn]).to include('must be one of the players')
       end
@@ -187,7 +187,7 @@ RSpec.describe Game, type: :model do
 
           expect(game.move_history).to be_an(Array)
           expect(game.move_history.length).to eq(3)
-          
+
           first_move = game.move_history[0]
           expect(first_move['user_id']).to eq(player1.id)
           expect(first_move['level']).to eq(0)
@@ -241,16 +241,16 @@ RSpec.describe Game, type: :model do
 
     context 'edge cases' do
       let(:game_with_many_moves) { create(:in_progress_game, player1: player1, player2: player2, current_turn: player1) }
-      
+
       it 'handles a game with many moves efficiently' do
         50.times do |i|
           travel_to(i.minutes.ago) do
             create(:game_move, game: game_with_many_moves, user: player1, level: rand(0..3), column: rand(0..3), row: rand(0..3))
-            
+
             game_with_many_moves.update!(current_turn: player2)
-            
+
             create(:game_move, game: game_with_many_moves, user: player2, level: rand(0..3), column: rand(0..3), row: rand(0..3))
-            
+
             game_with_many_moves.update!(current_turn: player1)
           end
         end
@@ -263,16 +263,16 @@ RSpec.describe Game, type: :model do
       it 'handles moves with identical timestamps' do
         travel_to(Time.current) do
           create(:game_move, game: game, user: player1, level: 0, column: 0, row: 0)
-          
+
           game.update!(current_turn: player2)
-          
+
           create(:game_move, game: game, user: player2, level: 1, column: 1, row: 1)
         end
 
         game.complete_game!
         game.reload
 
-        expect(game.move_history.map { |m| m['user_id'] }).to eq([player1.id, player2.id])
+        expect(game.move_history.map { |m| m['user_id'] }).to eq([ player1.id, player2.id ])
       end
 
       it 'handles moves with minimal valid values' do

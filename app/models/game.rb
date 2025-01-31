@@ -37,7 +37,7 @@ class Game < ApplicationRecord
     event :complete_game do
       before do
         self.current_turn = player1
-        
+
         serialize_move_history
       end
 
@@ -63,8 +63,8 @@ class Game < ApplicationRecord
   end
 
   def place_move(level, row, column, player_number)
-    return false unless [1, 2].include?(player_number)
-    return false unless [level, row, column].all? { |n| n.between?(0, 3) }
+    return false unless [ 1, 2 ].include?(player_number)
+    return false unless [ level, row, column ].all? { |n| n.between?(0, 3) }
 
     board_state[level][row][column] = player_number
     save
@@ -115,7 +115,7 @@ class Game < ApplicationRecord
 
     if in_progress? && ![ player1_id, player2_id ].include?(current_turn_id)
       errors.add(:current_turn, "must be one of the players")
-      
+
       return
     end
 

@@ -34,7 +34,7 @@ module GameBroadcaster
       },
       current_turn_id: game_move.game.current_turn_id
     }
-    
+
     ActionCable.server.broadcast("game_#{game_move.game_id}", message)
   end
 
@@ -62,7 +62,7 @@ module GameBroadcaster
       user_id: user.id,
       connected: connected
     }
-    
+
     ActionCable.server.broadcast("game_#{game.id}", message)
   end
-end 
+end

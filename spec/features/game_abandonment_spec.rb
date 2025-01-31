@@ -15,7 +15,7 @@ RSpec.describe 'Game Abandonment', type: :system do
 
     expect(page).to have_content(user.username)
     expect(page).to have_content("#{user.username} - Owner")
-    
+
     find('[data-testid="game-options-menu"]').click
     expect(page).to have_button('Abandon Game')
 
@@ -36,7 +36,7 @@ RSpec.describe 'Game Abandonment', type: :system do
     expect(page).to have_content("#{user.username} - Owner")
     expect(page).to have_content(other_user.username)
     expect(page).to have_content("#{other_user.username} - Challenger")
-    
+
     find('[data-testid="game-options-menu"]').click
     expect(page).to have_button('Abandon Game')
 
@@ -57,7 +57,7 @@ RSpec.describe 'Game Abandonment', type: :system do
     expect(page).to have_content("#{other_user.username} - Owner")
     expect(page).to have_content(user.username)
     expect(page).to have_content("#{user.username} - Challenger")
-    
+
     find('[data-testid="game-options-menu"]').click
     expect(page).to have_button('Abandon Game')
 

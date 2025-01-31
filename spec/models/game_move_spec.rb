@@ -73,7 +73,7 @@ RSpec.describe GameMove, type: :model do
       it 'is invalid when position is already taken' do
         new_move = build(:game_move, game: game, user: game.current_turn,
                         level: 1, column: 1, row: 1)
-        
+
                         expect(new_move).to be_invalid
         expect(new_move.errors[:base]).to include("Position is already taken")
       end
@@ -81,16 +81,16 @@ RSpec.describe GameMove, type: :model do
       it 'is valid when position is empty' do
         new_move = build(:game_move, game: game, user: game.current_turn,
                         level: 0, column: 0, row: 0)
-        
+
                         expect(new_move).to be_valid
       end
 
       it 'updates board state when move is valid' do
-        move_data = [0, 0, 0]
+        move_data = [ 0, 0, 0 ]
         result = GameMoveProcessor.new(game, game.current_turn).process(move_data)
-        
+
         expect(result[:success]).to be true
-        
+
         game.reload
         expect(game.board_state[0][0][0]).to eq(2)
       end
@@ -104,7 +104,7 @@ RSpec.describe GameMove, type: :model do
 
     context 'when user is not a game participant' do
       let(:non_participant) { create(:user, :confirmed) }
-      
+
       it 'is invalid' do
         game_move.user = non_participant
         expect(game_move).to be_invalid
@@ -114,7 +114,7 @@ RSpec.describe GameMove, type: :model do
 
     context 'when game is not in progress' do
       let(:waiting_game) { create(:waiting_game) }
-      
+
       it 'is invalid' do
         game_move.game = waiting_game
         expect(game_move).to be_invalid
@@ -124,7 +124,7 @@ RSpec.describe GameMove, type: :model do
 
     context 'when user is not current turn' do
       let(:other_player) { game.player1 == user ? game.player2 : game.player1 }
-      
+
       it 'is invalid' do
         game_move.user = other_player
         expect(game_move).to be_invalid
@@ -267,8 +267,8 @@ RSpec.describe GameMove, type: :model do
         # Our move should still process correctly
         expect { game_move.save! }.not_to raise_error
         game.reload
-        expect(game.current_turn).to be_in([player1, player2])
+        expect(game.current_turn).to be_in([ player1, player2 ])
       end
     end
   end
-end 
+end

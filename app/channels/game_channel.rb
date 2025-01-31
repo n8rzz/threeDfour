@@ -28,7 +28,7 @@ class GameChannel < ApplicationCable::Channel
 
   def unsubscribed
     stop_all_streams
-    
+
     if @game_id && current_user
       GameSession.where(
         game_id: @game_id,

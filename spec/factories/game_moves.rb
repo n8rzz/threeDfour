@@ -10,7 +10,7 @@ FactoryBot.define do
     after(:build) do |game_move|
       # Ensure the user is a participant in the game and it's their turn
       if game_move.user && game_move.game
-        unless [game_move.game.player1_id, game_move.game.player2_id].include?(game_move.user_id)
+        unless [ game_move.game.player1_id, game_move.game.player2_id ].include?(game_move.user_id)
           game_move.user = game_move.game.current_turn
         end
 
@@ -27,4 +27,4 @@ FactoryBot.define do
       is_valid { false }
     end
   end
-end 
+end

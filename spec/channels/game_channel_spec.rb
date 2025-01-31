@@ -111,7 +111,7 @@ RSpec.describe GameChannel, type: :channel do
         let(:move_data) do
           {
             "game_id" => game.id,
-            "move" => [0, 1, 2]
+            "move" => [ 0, 1, 2 ]
           }
         end
 
@@ -139,7 +139,7 @@ RSpec.describe GameChannel, type: :channel do
       let(:move_data) do
         {
           "game_id" => game.id,
-          "move" => [0, 1, 2]
+          "move" => [ 0, 1, 2 ]
         }
       end
 
@@ -161,7 +161,7 @@ RSpec.describe GameChannel, type: :channel do
             hash_including(
               type: "move",
               status: "error",
-              errors: ["User must be the current turn player"]
+              errors: [ "User must be the current turn player" ]
             )
           )
       end
@@ -173,7 +173,7 @@ RSpec.describe GameChannel, type: :channel do
         {
           "game_id" => game.id,
           "user_id" => other_user.id, # Attempting to spoof another user
-          "move" => [0, 1, 2]
+          "move" => [ 0, 1, 2 ]
         }
       end
 
@@ -187,7 +187,7 @@ RSpec.describe GameChannel, type: :channel do
 
     context "when game is not in progress" do
       let(:waiting_game) { create(:waiting_game, player1: user) }
-      
+
       before do
         subscribe game_id: waiting_game.id
       end
@@ -195,7 +195,7 @@ RSpec.describe GameChannel, type: :channel do
       let(:move_data) do
         {
           "game_id" => waiting_game.id,
-          "move" => [0, 1, 2]
+          "move" => [ 0, 1, 2 ]
         }
       end
 
@@ -216,7 +216,7 @@ RSpec.describe GameChannel, type: :channel do
             hash_including(
               type: "move",
               status: "error",
-              errors: ["Game must be in progress"]
+              errors: [ "Game must be in progress" ]
             )
           )
       end
@@ -230,14 +230,14 @@ RSpec.describe GameChannel, type: :channel do
       let(:valid_array_move) do
         {
           "game_id" => game.id,
-          "move" => [1, 2, 3]
+          "move" => [ 1, 2, 3 ]
         }
       end
 
       let(:invalid_array_move) do
         {
           "game_id" => game.id,
-          "move" => [1]
+          "move" => [ 1 ]
         }
       end
 
@@ -266,7 +266,7 @@ RSpec.describe GameChannel, type: :channel do
 
       it "updates last_seen_at but still processes the move" do
         game.update!(current_turn: user)
-        
+
         expect {
           perform :receive, { "game_id" => game.id, "move" => { "level" => 1, "column" => 1, "row" => 1 } }
         }.to change(GameMove, :count).by(1)
@@ -277,7 +277,7 @@ RSpec.describe GameChannel, type: :channel do
       let(:move_data) do
         {
           "game_id" => -1,
-          "move" => [0, 1, 2]
+          "move" => [ 0, 1, 2 ]
         }
       end
 
@@ -401,7 +401,7 @@ RSpec.describe GameChannel, type: :channel do
 
     it 'broadcasts player disconnected status' do
       subscribe(game_id: game.id)
-      
+
       expect {
         subscription.unsubscribe_from_channel
       }.to have_broadcasted_to("game_#{game.id}")

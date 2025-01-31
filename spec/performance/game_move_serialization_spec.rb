@@ -8,23 +8,23 @@ RSpec.describe 'Game Move Serialization Performance', :performance do
   def create_moves(game, count)
     (count / 2).times do
       create(:game_move, game: game, user: player1)
-      
+
       game.update!(current_turn: player2)
-      
+
       create(:game_move, game: game, user: player2)
-      
+
       game.update!(current_turn: player1)
     end
   end
 
   it 'maintains reasonable performance with increasing move counts' do
-    move_counts = [10, 50, 100]
+    move_counts = [ 10, 50, 100 ]
     timings = {}
 
     move_counts.each do |count|
       game.game_moves.destroy_all
       game.update_columns(status: 'in_progress', move_history: nil)
-      
+
       create_moves(game, count)
 
       timings[count] = Benchmark.measure do
@@ -51,11 +51,11 @@ RSpec.describe 'Game Move Serialization Performance', :performance do
 
   it 'handles memory usage efficiently with large move counts' do
     create_moves(game, 200)
-    
+
     memory_before = GetProcessMem.new.mb
-    
+
     game.complete_game!
-    
+
     memory_after = GetProcessMem.new.mb
 
     puts "\nMemory usage:"
@@ -69,13 +69,13 @@ RSpec.describe 'Game Move Serialization Performance', :performance do
   it 'handles batch serialization efficiently', :skip_in_ci do
     games = 5.times.map do
       game = create(:in_progress_game, player1: player1, player2: player2, current_turn: player1)
-      
+
       create_moves(game, 50)
       game
     end
 
     memory_before = GetProcessMem.new.mb
-    
+
     time = Benchmark.measure do
       games.each(&:complete_game!)
     end
@@ -90,4 +90,4 @@ RSpec.describe 'Game Move Serialization Performance', :performance do
     expect(time.real).to be < 1.0
     expect(memory_after - memory_before).to be < 20
   end
-end 
+end

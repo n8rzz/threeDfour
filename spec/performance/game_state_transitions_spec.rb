@@ -6,12 +6,12 @@ RSpec.describe 'Game State Transitions Performance', :performance do
 
   def create_game_with_moves(move_count)
     game = create(:in_progress_game, player1: player1, player2: player2, current_turn: player1)
-    
+
     (move_count / 2).times do
       create(:game_move, game: game, user: player1)
 
       game.update!(current_turn: player2)
-      
+
       create(:game_move, game: game, user: player2)
 
       game.update!(current_turn: player1)
@@ -23,7 +23,7 @@ RSpec.describe 'Game State Transitions Performance', :performance do
   it 'handles rapid state transitions efficiently' do
     games = 10.times.map { create(:waiting_game, player1: player1, current_turn: player1) }
     memory_before = GetProcessMem.new.mb
-    
+
     time = Benchmark.measure do
       games.each do |game|
         game.update!(player2: player2)
@@ -32,7 +32,7 @@ RSpec.describe 'Game State Transitions Performance', :performance do
         create(:game_move, game: game, user: player1)
 
         game.update!(current_turn: player2)
-        
+
         create(:game_move, game: game, user: player2)
 
         game.complete_game!
@@ -51,7 +51,7 @@ RSpec.describe 'Game State Transitions Performance', :performance do
   end
 
   it 'maintains performance with increasing move counts during completion' do
-    move_counts = [10, 50, 100]
+    move_counts = [ 10, 50, 100 ]
     timings = {}
 
     move_counts.each do |count|
@@ -106,7 +106,7 @@ RSpec.describe 'Game State Transitions Performance', :performance do
     puts "Average time per game: #{(time.real / 5).round(3)} seconds"
     puts "Memory increase: #{(memory_after - memory_before).round(2)} MB"
 
-    expect(time.real / 5).to be < 0.2 
+    expect(time.real / 5).to be < 0.2
     expect(memory_after - memory_before).to be < 15
   end
 
@@ -127,4 +127,4 @@ RSpec.describe 'Game State Transitions Performance', :performance do
     expect(time.real).to be < 0.5
     expect(memory_after - memory_before).to be < 10
   end
-end 
+end
